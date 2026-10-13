@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { templeHistory, visitingRouteSteps, coreFaqs, allKnowledgeFaqs } from './knowledgeBase.js';
+import { templeHistory, visitingRouteSteps, coreFaqs, allKnowledgeFaqs, hotspotGuides } from './knowledgeBase.js';
 import { handleTourRequest } from './aiRouter.js';
 import { getPendingQuestions, resolveQuestion, getDynamicFaqs } from './pendingStore.js';
 
@@ -66,6 +66,25 @@ app.get('/api/guide/route', (req, res) => {
   const lang = req.query.lang || 'zh-TW';
   const steps = visitingRouteSteps[lang] || visitingRouteSteps['zh-TW'];
   res.json(steps);
+});
+
+// 5.1 360 Panorama Hotspot Guide endpoint
+app.get('/api/guide/hotspot/:id', (req, res) => {
+  const lang = req.query.lang || 'zh-TW';
+  const hotspotId = req.params.id;
+  const guide = hotspotGuides[hotspotId] || hotspotGuides['guanyin_hall'];
+  const resolvedId = (guide && guide.aliasOf) ? guide.aliasOf : (hotspotId || 'guanyin_hall');
+  const actualGuide = hotspotGuides[resolvedId] || hotspotGuides['guanyin_hall'];
+
+  res.json({
+    id: actualGuide.id,
+    target: actualGuide.target,
+    title: actualGuide.title[lang] || actualGuide.title['zh-TW'],
+    subtitle: actualGuide.subtitle ? (actualGuide.subtitle[lang] || actualGuide.subtitle['zh-TW']) : '',
+    location: actualGuide.location ? (actualGuide.location[lang] || actualGuide.location['zh-TW']) : '',
+    textContent: actualGuide.textContent[lang] || actualGuide.textContent['zh-TW'],
+    audioScript: actualGuide.audioScript[lang] || actualGuide.audioScript['zh-TW']
+  });
 });
 
 // 6. Admin / HITL: Get pending questions

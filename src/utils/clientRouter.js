@@ -1,7 +1,7 @@
 // Client-side Fallback Router for GitHub Pages / Static Hosting
 // Ensures 100% functionality on mobile devices without needing an Express server
 
-import { allKnowledgeFaqs, templeHistory, visitingRouteSteps, coreFaqs } from '../../server/knowledgeBase.js';
+import { allKnowledgeFaqs, templeHistory, visitingRouteSteps, coreFaqs, hotspotGuides } from '../../server/knowledgeBase.js';
 
 const STORAGE_KEY_PENDING = 'lungshan_pending_questions';
 const STORAGE_KEY_DYNAMIC = 'lungshan_dynamic_faqs';
@@ -365,4 +365,20 @@ export function clientGetVisitingSteps(lang = 'zh-TW') {
 
 export function clientGetPendingQuestions() {
   return getStoredPendingQuestions();
+}
+
+export function clientGetHotspotGuide(hotspotId, lang = 'zh-TW') {
+  const guide = hotspotGuides[hotspotId] || hotspotGuides['guanyin_hall'];
+  const resolvedId = (guide && guide.aliasOf) ? guide.aliasOf : (hotspotId || 'guanyin_hall');
+  const actualGuide = hotspotGuides[resolvedId] || hotspotGuides['guanyin_hall'];
+
+  return {
+    id: actualGuide.id,
+    target: actualGuide.target,
+    title: actualGuide.title[lang] || actualGuide.title['zh-TW'],
+    subtitle: actualGuide.subtitle ? (actualGuide.subtitle[lang] || actualGuide.subtitle['zh-TW']) : '',
+    location: actualGuide.location ? (actualGuide.location[lang] || actualGuide.location['zh-TW']) : '',
+    textContent: actualGuide.textContent[lang] || actualGuide.textContent['zh-TW'],
+    audioScript: actualGuide.audioScript[lang] || actualGuide.audioScript['zh-TW']
+  };
 }

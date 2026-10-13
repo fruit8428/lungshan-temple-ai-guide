@@ -8,7 +8,9 @@ import HistoryModal from './components/HistoryModal';
 import HitlAdminModal from './components/HitlAdminModal';
 import ArchitectureInfoModal from './components/ArchitectureInfoModal';
 import AiChatDrawer from './components/AiChatDrawer';
-import { fetchHistory, fetchVisitingSteps, fetchFaqs } from './utils/api';
+import PanoramaViewer from './components/PanoramaViewer';
+import HotspotModal from './components/HotspotModal';
+import { fetchHistory, fetchVisitingSteps, fetchFaqs, fetchHotspotGuide } from './utils/api';
 import { speechManager } from './utils/tts';
 import { Volume2, Sparkles, Sliders, ShieldCheck, Heart, Scroll, Compass, MapPin, ExternalLink } from 'lucide-react';
 
@@ -18,6 +20,11 @@ export default function App() {
   const [historyData, setHistoryData] = useState(null);
   const [visitingSteps, setVisitingSteps] = useState([]);
   const [faqs, setFaqs] = useState([]);
+
+  // 360 Panorama Hotspot state
+  const [hotspotData, setHotspotData] = useState(null);
+  const [isHotspotOpen, setIsHotspotOpen] = useState(false);
+  const [activeHotspotId, setActiveHotspotId] = useState(null);
 
   // Active audio player state
   const [activeAudio, setActiveAudio] = useState(null);
@@ -48,6 +55,11 @@ export default function App() {
       if (hist) setHistoryData(hist);
       if (steps) setVisitingSteps(steps);
       if (faqList) setFaqs(faqList);
+
+      if (activeHotspotId) {
+        const guide = await fetchHotspotGuide(activeHotspotId, lang);
+        if (guide) setHotspotData(guide);
+      }
     } catch (err) {
       console.error('Failed to load localized content:', err);
     }
@@ -56,6 +68,28 @@ export default function App() {
   useEffect(() => {
     loadData(currentLang);
   }, [currentLang]);
+
+  const handleHotspotTriggered = async (hotspotId = 'guanyin_hall') => {
+    setActiveHotspotId(hotspotId);
+    try {
+      const guide = await fetchHotspotGuide(hotspotId, currentLang);
+      if (guide) {
+        setHotspotData(guide);
+        setIsHotspotOpen(true);
+        if (guide.audioScript) {
+          speechManager.speak(guide.audioScript, currentLang, 1.0);
+          handlePlayAudio({
+            topic: guide.title,
+            script: guide.audioScript,
+            tier: '90%_knowledge_base',
+            latency: 6
+          });
+        }
+      }
+    } catch (err) {
+      console.error('Failed to trigger hotspot:', err);
+    }
+  };
 
   const handleSelectLanguage = (langCode) => {
     setCurrentLang(langCode);
@@ -163,6 +197,13 @@ export default function App() {
           </div>
         </section>
 
+        {/* 360 Panorama Tour (GoThru iframe with postMessage Hotspot Integration) */}
+        <PanoramaViewer
+          currentLang={currentLang}
+          onHotspotTriggered={handleHotspotTriggered}
+          activeHotspot={activeHotspotId}
+        />
+
         {/* SECTION 1: 4 Core FAQ Buttons (90% Fast-tier Route as specified in Doc 1 & Doc 2) */}
         <QuickFaqButtons
           currentLang={currentLang}
@@ -243,6 +284,14 @@ export default function App() {
       )}
 
       {/* Modals & Drawers */}
+      <HotspotModal
+        isOpen={isHotspotOpen}
+        onClose={() => setIsHotspotOpen(false)}
+        currentLang={currentLang}
+        hotspotData={hotspotData}
+        onPlayAudio={handlePlayAudio}
+      />
+
       <HistoryModal
         isOpen={isHistoryOpen}
         onClose={() => setIsHistoryOpen(false)}

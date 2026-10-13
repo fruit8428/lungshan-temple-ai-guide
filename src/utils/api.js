@@ -7,7 +7,8 @@ import {
   clientGetHistory,
   clientGetVisitingSteps,
   clientGetPendingQuestions,
-  clientResolveQuestion
+  clientResolveQuestion,
+  clientGetHotspotGuide
 } from './clientRouter.js';
 
 const isStaticHosting = typeof window !== 'undefined' && (
@@ -75,6 +76,20 @@ export async function fetchVisitingSteps(lang = 'zh-TW') {
     return await res.json();
   } catch (err) {
     return clientGetVisitingSteps(lang);
+  }
+}
+
+export async function fetchHotspotGuide(hotspotId = 'guanyin_hall', lang = 'zh-TW') {
+  if (isStaticHosting) {
+    return clientGetHotspotGuide(hotspotId, lang);
+  }
+
+  try {
+    const res = await fetch(`${API_BASE}/guide/hotspot/${encodeURIComponent(hotspotId)}?lang=${encodeURIComponent(lang)}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return await res.json();
+  } catch (err) {
+    return clientGetHotspotGuide(hotspotId, lang);
   }
 }
 

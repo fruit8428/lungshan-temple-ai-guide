@@ -402,3 +402,45 @@ export const extendedFaqs = [
 ];
 
 export const allKnowledgeFaqs = [...coreFaqs, ...extendedFaqs];
+
+// 360 Panorama GoThru Hotspots Multilingual Guides
+export const hotspotGuides = {
+  "guanyin_hall": {
+    id: "guanyin_hall",
+    target: "stone_lion_and_hall",
+    title: {
+      "zh-TW": "三川殿青斗石獅與觀音正殿",
+      "en": "Sanchuan Hall Stone Lions & Guanyin Main Hall",
+      "ja": "三川殿の青斗石獅子と本尊観音正殿",
+      "ko": "삼천전 청두 석사자 및 본존 관음전"
+    },
+    subtitle: {
+      "zh-TW": "360° 實景熱點連動 • 清代石雕藝術與山門守護",
+      "en": "360° Hotspot Tour • Qing Dynasty Stone Sculpture & Temple Guardians",
+      "ja": "360°パノラマ連動 • 清朝石彫芸術と山門の守護神獣",
+      "ko": "360° 파노라마 연동 • 청대 석조 예술과 사찰 수호신"
+    },
+    location: {
+      "zh-TW": "三川殿正門兩側及正殿前庭",
+      "en": "Both sides of Sanchuan Hall Main Gate & Front Courtyard",
+      "ja": "三川殿正門両脇および正殿前庭",
+      "ko": "삼천전 정문 양옆 및 정전 앞뜰"
+    },
+    textContent: {
+      "zh-TW": "您剛在 360° 全景圖中點選的是三川殿前的「青斗石獅」！\n\n這對石獅立於清乾隆年間，雕工精湛：\n• 面向廟門右側為雄獅：張口露齒、腳踏繡球彩帶，象徵威震四方、喜迎福祿。\n• 面向廟門左側為雌獅：緊閉雙唇、懷抱守護幼獅，象徵慈悲溫柔、萬代綿延。\n\n石獅鎮守山門、辟邪除穢。信眾穿過石獅迎門並由右側「龍門」進入後，即可前往正殿朝拜主神「觀世音菩薩」祈求平安康泰。",
+      "en": "You just tapped the famous 'Qingdou Granite Stone Lions' in the 360° panorama tour!\n\nCarved during the Qianlong era of the Qing Dynasty, this exquisite pair guards the temple gate:\n• Right (Male Lion): Open jaws, playfully treading on an embroidered silk ball, symbolizing majesty and welcoming fortune.\n• Left (Female Lion): Closed mouth, tenderly protecting a cub, symbolizing maternal compassion and longevity.\n\nGuarding the temple against negativity, passing past these guardian lions through the Dragon Gate on the right leads directly into the sacred courtyard of Guanyin Bodhisattva.",
+      "ja": "360°パノラマで「青斗石獅子（狛犬）」が選択されました！\n\n三川殿の正門両脇に鎮座するこの一対の石獅子は、清朝乾隆年間に福建省の銘石「青斗石」から彫り出された名作です：\n• 正面向かって右の雄獅子：口を開けて威厳を示し、足元で繍球を踏んで福を招きます。\n• 正面向かって左の雌獅子：口を固く結んで慈愛をたたえ、子獅子を優しく抱いています。\n\n邪気を払い寺内を清める石獅子の門をくぐり、右側の「龍門」より進むと、本尊・観世音菩薩の荘厳な正殿へと導かれます。",
+      "ko": "360° 파노라마에서 삼천전 정문의 '청두 석사자'를 선택하셨습니다!\n\n청나라 건륭 연간에 조각된 이 한 쌍의 석사자는 뛰어난 예술성을 자랑하는 수호 신수입니다：\n• 우측 (수사자): 입을 크게 벌려 위엄을 보이고, 발로 비단 구슬을 굴리며 길운을 맞이합니다.\n• 좌측 (암사자): 입을 굳게 다물고 자애로운 모습으로 새끼 사자를 품고 있습니다.\n\n사악한 기운을 물리치는 석사자 관문을 지나 우측 '용문'으로 들어서시면, 주신이신 '관세음보살'을 모신 거룩한 정전으로 이어집니다."
+    },
+    audioScript: {
+      "zh-TW": "您好！您剛在全景圖點選的是三川殿前的青斗石獅！右側開口的雄獅腳踩彩球迎祥納福，左側閉口的母獅保護小獅子展現慈悲。這對石獅守護著寺廟山門，走進山門就是主神觀世音菩薩的正殿喔！",
+      "en": "Hello! You have tapped the famous granite Guardian Stone Lions in the 360 tour! The open-mouthed male on the right welcomes good fortune, while the gentle female on the left protects her cub. Walking past them brings you into the grand Main Hall of Guanyin Bodhisattva!",
+      "ja": "こんにちは！360度ツアーで三川殿の青斗石獅子を選ばれましたね！右の雄は口を開けて招福の玉を持ち、左の雌は子獅子を優しく守っています。この石獅子をくぐると、本尊・観世音菩薩の正殿へと入りますよ。",
+      "ko": "안녕하세요! 360 파노라마에서 삼천전 앞의 청두 석사자를 선택하셨습니다! 오른쪽의 수사자는 입을 벌려 복을 부르고, 왼쪽의 암사자는 새끼를 품어 자애로움을 나타냅니다. 석사자를 지나 안으로 들어서시면 관세음보살님의 거룩한 정전으로 이어집니다!"
+    }
+  },
+  "stone_lion": {
+    id: "stone_lion",
+    aliasOf: "guanyin_hall"
+  }
+};
