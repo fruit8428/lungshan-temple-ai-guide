@@ -92,6 +92,28 @@ export default function App() {
     }
   };
 
+  // 3. Listen to URL parameter or Hash change for Hotspot deep-links
+  useEffect(() => {
+    const checkUrlHotspot = () => {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const hotspotParam = params.get('hotspot');
+        const hash = window.location.hash;
+        
+        if (hotspotParam) {
+          handleHotspotTriggered(hotspotParam);
+        } else if (hash && hash.includes('hotspot')) {
+          const id = hash.replace('#hotspot-', '').replace('#hotspot=', '').replace('#', '');
+          handleHotspotTriggered(id || 'guanyin_hall');
+        }
+      } catch (e) {}
+    };
+
+    checkUrlHotspot();
+    window.addEventListener('hashchange', checkUrlHotspot);
+    return () => window.removeEventListener('hashchange', checkUrlHotspot);
+  }, [currentLang]);
+
   const handleSelectLanguage = (langCode) => {
     setCurrentLang(langCode);
     setAutoDetected(false);
