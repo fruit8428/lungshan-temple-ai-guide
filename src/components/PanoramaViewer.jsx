@@ -19,13 +19,29 @@ export default function PanoramaViewer({
         try {
           data = JSON.parse(data);
         } catch (e) {
-          // not JSON, ignore
+          // If the message is a raw string matching hotspot keywords
+          if (typeof data === 'string' && (
+            data.includes('guanyin') || 
+            data.includes('stone') || 
+            data.includes('lion') || 
+            data.includes('gothru') ||
+            data.includes('shishi')
+          )) {
+            data = { type: 'gothru_hotspot', hotspot_id: 'guanyin_hall' };
+          }
         }
       }
 
-      if (data && (data.type === 'gothru_hotspot' || data.hotspot_id)) {
+      if (data && (
+        data.type === 'gothru_hotspot' || 
+        data.hotspot_id || 
+        data.action === 'guide_stone_lion' ||
+        data.action === 'stone_lion' ||
+        data.target === 'stone_lion' ||
+        data.target === 'guanyin_hall'
+      )) {
         console.log('[GoThru postMessage received]:', data);
-        const hotspotId = data.hotspot_id || 'guanyin_hall';
+        const hotspotId = data.hotspot_id || data.action || data.target || 'guanyin_hall';
         setLastTriggeredTime(new Date().toLocaleTimeString());
         if (onHotspotTriggered) {
           onHotspotTriggered(hotspotId);
