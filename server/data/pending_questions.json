@@ -1,0 +1,52 @@
+[
+  {
+    "id": "pending_1791859336513_q6xe",
+    "timestamp": "2026-10-13T02:42:16.513Z",
+    "status": "pending",
+    "query": "龍山寺香油錢明細有公開嗎？",
+    "lang": "zh-TW",
+    "confidence": 0.1,
+    "reason": "sensitive_topic_detected"
+  },
+  {
+    "id": "pending_1791859325774_nzid",
+    "timestamp": "2026-10-13T02:42:05.774Z",
+    "status": "pending",
+    "query": "龍山寺香油錢明細有公開嗎？",
+    "lang": "zh-TW",
+    "confidence": 0.1,
+    "reason": "sensitive_topic_detected"
+  },
+  {
+    "id": "pending_1791859325772_iro3",
+    "timestamp": "2026-10-13T02:42:05.772Z",
+    "status": "pending",
+    "query": "我想知道求籤要怎麼求",
+    "lang": "zh-TW",
+    "confidence": 0.48,
+    "reason": "low_confidence_general_query",
+    "suggestedAnswer": "龍山寺是融合佛、道、民間信仰的國家古蹟，殿內神明眾多各司所職。您若有特別祈願，可依照「由右而左、由外而內」的順序參拜；雙手合十、心誠則靈。若有更詳盡的儀軌疑問，隨時歡迎詢問服務台值班人員。"
+  },
+  {
+    "id": "pending_sample_01",
+    "query": "可以在寺廟裡吃素食便當或喝奶茶嗎？",
+    "lang": "zh-TW",
+    "timestamp": "2026-10-13T01:42:05.768Z",
+    "confidence": 0.35,
+    "reason": "low_confidence_dietary_rule",
+    "status": "resolved",
+    "suggestedAnswer": "為維護古蹟整潔與宗教莊嚴，正殿與各殿內嚴禁飲食。若有飲水需求可至側廊休息區。",
+    "resolvedAt": "2026-10-13T02:42:51.321Z",
+    "resolvedAnswer": "寺廟內為維護古蹟環境整潔，正殿與神明殿前禁止飲食，若有需要可於戶外中庭或洗手台旁飲水。"
+  },
+  {
+    "id": "pending_sample_02",
+    "query": "Can I bring my guide dog inside the temple?",
+    "lang": "en",
+    "timestamp": "2026-10-13T00:42:05.768Z",
+    "confidence": 0.42,
+    "reason": "special_accessibility_query",
+    "status": "pending",
+    "suggestedAnswer": "Certified guide dogs and service animals assisting persons with disabilities are welcome throughout the temple grounds."
+  }
+]
