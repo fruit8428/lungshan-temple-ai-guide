@@ -44,7 +44,7 @@ export default function PanoramaViewer({
         const hotspotId = data.hotspot_id || data.action || data.target || 'guanyin_hall';
         setLastTriggeredTime(new Date().toLocaleTimeString());
         if (onHotspotTriggered) {
-          onHotspotTriggered(hotspotId);
+          onHotspotTriggered(hotspotId, data.lang);
         }
       }
     };

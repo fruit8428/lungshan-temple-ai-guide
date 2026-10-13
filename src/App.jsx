@@ -69,15 +69,16 @@ export default function App() {
     loadData(currentLang);
   }, [currentLang]);
 
-  const handleHotspotTriggered = async (hotspotId = 'guanyin_hall') => {
+  const handleHotspotTriggered = async (hotspotId = 'guanyin_hall', langOverride) => {
+    const targetLang = langOverride || currentLang;
     setActiveHotspotId(hotspotId);
     try {
-      const guide = await fetchHotspotGuide(hotspotId, currentLang);
+      const guide = await fetchHotspotGuide(hotspotId, targetLang);
       if (guide) {
         setHotspotData(guide);
         setIsHotspotOpen(true);
         if (guide.audioScript) {
-          speechManager.speak(guide.audioScript, currentLang, 1.0);
+          speechManager.speak(guide.audioScript, targetLang, 1.0);
           handlePlayAudio({
             topic: guide.title,
             script: guide.audioScript,
