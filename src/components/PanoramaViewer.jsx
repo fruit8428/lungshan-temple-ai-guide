@@ -149,21 +149,26 @@ export default function PanoramaViewer({
           </div>
         </div>
 
-        {/* Hotspot Direct Test Buttons (at bottom of viewer for quick testing) */}
-        <div className="absolute bottom-3 right-3 z-20 flex items-center space-x-2">
+        {/* Hotspot Direct Action Bar (at bottom of viewer for guaranteed native audio) */}
+        <div className="absolute bottom-3 left-3 right-3 z-20 flex flex-wrap items-center justify-between gap-2 pointer-events-auto">
           <button
             onClick={() => onHotspotTriggered('guanyin_hall')}
-            className="px-3 py-1.5 rounded-xl bg-temple-red/90 hover:bg-temple-red text-white text-xs font-serif font-bold shadow-lg border border-temple-gold flex items-center space-x-1.5 transition active:scale-95 backdrop-blur-sm"
-            title="模擬信眾點擊石獅熱點"
+            className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-temple-red via-red-700 to-amber-700 hover:from-red-600 hover:to-amber-600 text-white text-xs sm:text-sm font-serif font-black shadow-2xl border-2 border-temple-gold flex items-center space-x-2 transition active:scale-95 backdrop-blur-md ring-2 ring-red-950/60"
+            title="點擊立即播放石獅語音導覽"
           >
-            <Compass className="w-3.5 h-3.5 text-temple-gold" />
+            <span className="text-lg">🦁</span>
             <span>
-              {currentLang === 'zh-TW' && "🦁 模擬點擊「石獅」熱點"}
-              {currentLang === 'en' && "🦁 Simulate 'Stone Lion' Hotspot"}
-              {currentLang === 'ja' && "🦁 「石獅子」熱点をテスト"}
-              {currentLang === 'ko' && "🦁 '석사자' 핫스팟 테스트"}
+              {currentLang === 'zh-TW' && "點此播放「三川殿石獅」語音導覽"}
+              {currentLang === 'en' && "Play 'Stone Lions' Audio Guide"}
+              {currentLang === 'ja' && "「青斗石獅子」音声ガイドを再生"}
+              {currentLang === 'ko' && "'청두 석사자' 음성 가이드 재생"}
             </span>
+            <Volume2 className="w-4 h-4 text-amber-200 fill-current animate-pulse" />
           </button>
+
+          <span className="hidden sm:inline-flex items-center space-x-1 px-2.5 py-1 rounded-lg bg-black/60 backdrop-blur-sm text-[11px] text-amber-200 border border-amber-400/30">
+            <span>🔊 點擊按鈕或熱點即刻發聲</span>
+          </span>
         </div>
       </div>
     </section>
