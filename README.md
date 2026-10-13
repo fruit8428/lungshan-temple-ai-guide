@@ -1,6 +1,12 @@
 # 艋舺龍山寺多語系 AI 語音導覽系統 (Bangka Lungshan Temple Multilingual AI Tour Guide)
 
-本系統嚴格遵循專案所提供之兩份核心規格指南進行研發與建置：
+🌐 **線上公開網頁版（手機直接開啟測試）**：  
+👉 [https://fruit8428.github.io/lungshan-temple-ai-guide/](https://fruit8428.github.io/lungshan-temple-ai-guide/)
+
+📂 **GitHub 開源儲存庫**：  
+👉 [https://github.com/fruit8428/lungshan-temple-ai-guide](https://github.com/fruit8428/lungshan-temple-ai-guide)
+
+---
 1. **`gemini-code-1791858700624.md` (skill.md)**：廟宇 AI 語音導覽系統核心架構指南（RAG 雙層分流 + Human-in-the-Loop 飛輪 + 多語系自動偵測）。
 2. **`gemini-code-1791858777441.md`**：艋舺龍山寺歷史背景、建議參拜順序（龍門進、虎門出）與 4 大前端按鍵式常見問題（文字解答 + TTS 語音腳本）。
 
