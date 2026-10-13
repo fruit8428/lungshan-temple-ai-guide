@@ -72,6 +72,8 @@ export default function App() {
   const handleHotspotTriggered = async (hotspotId = 'guanyin_hall', langOverride) => {
     const targetLang = langOverride || currentLang;
     setActiveHotspotId(hotspotId);
+    // Synchronously unlock audio & play temple chime on direct user gesture
+    speechManager.playTempleChime();
     try {
       const guide = await fetchHotspotGuide(hotspotId, targetLang);
       if (guide) {
