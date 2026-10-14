@@ -108,8 +108,22 @@ export default function PanoramaViewer({
           </p>
         </div>
 
-        {/* Status Badge & Fullscreen */}
-        <div className="flex items-center space-x-2">
+        {/* Status Badge, Hint Pill & Fullscreen */}
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="bg-temple-charcoal text-white border border-temple-gold/60 px-3 py-1.5 rounded-xl shadow-xs text-xs flex items-center space-x-1.5">
+            <Sparkles className="w-3.5 h-3.5 text-amber-300 shrink-0 animate-pulse" />
+            <span className="font-serif">
+              {currentLang === 'zh-TW' &&
+                '點擊全景畫面中的熱點，即刻啟動語音導覽！'}
+              {currentLang === 'en' &&
+                'Tap any hotspot in the 360° view to start the audio guide!'}
+              {currentLang === 'ja' &&
+                'パノラマ内のスポットをタップして音声ガイドを再生！'}
+              {currentLang === 'ko' &&
+                '파노라마 화면 속 핫스팟을 눌러 음성 가이드를 시작하세요!'}
+            </span>
+          </div>
+
           <span className="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-300 text-emerald-800 text-[11px] font-mono shadow-2xs">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
             <span>360° 雙向熱點連動</span>
@@ -160,23 +174,6 @@ export default function PanoramaViewer({
           loading="lazy"
           onLoad={() => setIsIframeLoaded(true)}
         />
-
-        {/* Overlay Hotspot Hint Pill */}
-        <div className="absolute top-3 left-3 right-3 sm:right-auto z-20 pointer-events-none">
-          <div className="bg-temple-charcoal/85 backdrop-blur-md border border-temple-gold/60 text-white px-3 py-1.5 rounded-xl shadow-lg text-xs flex items-center space-x-2">
-            <Sparkles className="w-4 h-4 text-amber-300 shrink-0 animate-pulse" />
-            <span className="font-serif">
-              {currentLang === 'zh-TW' &&
-                '點擊全景畫面中的熱點，即刻啟動語音導覽！'}
-              {currentLang === 'en' &&
-                'Tap any hotspot in the 360° view to start the audio guide!'}
-              {currentLang === 'ja' &&
-                'パノラマ内のスポットをタップして音声ガイドを再生！'}
-              {currentLang === 'ko' &&
-                '파노라마 화면 속 핫스팟을 눌러 음성 가이드를 시작하세요!'}
-            </span>
-          </div>
-        </div>
       </div>
     </section>
   );
