@@ -211,14 +211,6 @@ export default function App() {
               >
                 <span>{strings.historyBtn}</span>
               </button>
-
-              <button
-                onClick={() => setIsAiChatOpen(true)}
-                className="px-4 py-2.5 rounded-xl bg-temple-red/80 hover:bg-temple-red border border-red-400/40 text-white font-medium text-xs sm:text-sm flex items-center space-x-1.5 transition ml-auto"
-              >
-                <Sparkles className="w-4 h-4 text-amber-200" />
-                <span>{strings.askAiBtn}</span>
-              </button>
             </div>
           </div>
         </section>
