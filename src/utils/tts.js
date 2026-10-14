@@ -1,20 +1,49 @@
-// Speech Synthesis & Web Audio Utility for Multilingual Voice Guides
-// Specially optimized for iOS Safari, Android Chrome, and Desktop browsers
+/**
+ * @fileoverview Enterprise Multilingual Speech Synthesis (TTS), Web Audio Temple Chime & Voice Recognition (ASR)
+ * Engineered for iOS Safari, Android Chrome, and Desktop browsers with sentence-chunking to prevent cutoff.
+ */
+
+const VOICE_LANG_MAP = {
+  "zh-TW": "zh-TW",
+  en: "en-US",
+  ja: "ja-JP",
+  ko: "ko-KR"
+};
+
+/**
+ * Splits a paragraph into natural sentences so Web Speech API never cuts off long utterances
+ */
+function splitIntoSentences(text) {
+  if (!text || !text.trim()) return [];
+  const raw = text
+    .replace(/\r\n/g, "\n")
+    .split(/(?<=[。！？.!?\n])\s*/)
+    .map(s => s.trim())
+    .filter(Boolean);
+  return raw.length > 0 ? raw : [text.trim()];
+}
 
 class SpeechManager {
   constructor() {
-    this.synth = typeof window !== 'undefined' ? window.speechSynthesis : null;
+    this.synth =
+      typeof window !== "undefined" && "speechSynthesis" in window
+        ? window.speechSynthesis
+        : null;
     this.audioCtx = null;
     this.voices = [];
+    this.queue = [];
+    this.currentIndex = 0;
     this.currentUtterance = null;
     this.isPlaying = false;
     this.isPaused = false;
-    this.currentText = '';
+    this.currentText = "";
+    this.currentLang = "zh-TW";
     this.currentRate = 1.0;
     this.listeners = new Set();
     this.isUnlocked = false;
+    this.speakTimer = null;
 
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       this.initUnlocker();
       if (this.synth) {
         this.loadVoices();
@@ -25,18 +54,16 @@ class SpeechManager {
     }
   }
 
-  // Audio Context unlocker for iOS / Mobile autoplay policy
   initUnlocker() {
     const unlock = () => {
       if (this.isUnlocked) return;
       try {
         const AudioContext = window.AudioContext || window.webkitAudioContext;
         if (AudioContext) {
-          this.audioCtx = new AudioContext();
-          if (this.audioCtx.state === 'suspended') {
+          if (!this.audioCtx) this.audioCtx = new AudioContext();
+          if (this.audioCtx.state === "suspended") {
             this.audioCtx.resume();
           }
-          // Play silent buffer to unlock audio hardware on iOS
           const buffer = this.audioCtx.createBuffer(1, 1, 22050);
           const source = this.audioCtx.createBufferSource();
           source.buffer = buffer;
@@ -44,55 +71,60 @@ class SpeechManager {
           source.start(0);
         }
 
-        // Unlock SpeechSynthesis on iOS by speaking a tiny empty utterance
         if (this.synth) {
-          const silentUtterance = new SpeechSynthesisUtterance(' ');
+          const silentUtterance = new SpeechSynthesisUtterance(" ");
           silentUtterance.volume = 0.01;
           this.synth.speak(silentUtterance);
         }
 
         this.isUnlocked = true;
       } catch (e) {
-        console.warn('Audio unlock error:', e);
+        console.warn("Audio unlock warning:", e);
       }
     };
 
-    ['touchstart', 'touchend', 'click', 'pointerdown'].forEach(evt => {
+    ["touchstart", "touchend", "click", "pointerdown"].forEach(evt => {
       window.addEventListener(evt, unlock, { once: true, passive: true });
     });
   }
 
-  // Plays an authentic temple chime bell sound via Web Audio API (Guaranteed audio feedback)
+  /**
+   * Plays a warm 528Hz harmonic temple singing bowl chime using Web Audio API
+   */
   playTempleChime() {
     try {
       const AudioContext = window.AudioContext || window.webkitAudioContext;
       if (!AudioContext) return;
       if (!this.audioCtx) this.audioCtx = new AudioContext();
-      if (this.audioCtx.state === 'suspended') this.audioCtx.resume();
+      if (this.audioCtx.state === "suspended") {
+        this.audioCtx.resume();
+      }
 
       const ctx = this.audioCtx;
       const now = ctx.currentTime;
+      const harmonics = [
+        { freq: 528, gain: 0.22, duration: 1.3, type: "sine" },
+        { freq: 1056, gain: 0.08, duration: 1.0, type: "triangle" },
+        { freq: 1584, gain: 0.04, duration: 0.7, type: "sine" }
+      ];
 
-      // Temple singing bowl harmonic frequencies (528 Hz base)
-      const freqs = [528, 1056, 1584];
-      freqs.forEach((freq, idx) => {
+      harmonics.forEach(h => {
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
+        osc.type = h.type;
+        osc.frequency.setValueAtTime(h.freq, now);
 
-        osc.type = idx === 0 ? 'sine' : 'triangle';
-        osc.frequency.setValueAtTime(freq, now);
-
-        gain.gain.setValueAtTime(idx === 0 ? 0.25 : 0.08, now);
-        gain.gain.exponentialRampToValueAtTime(0.0001, now + 1.2);
+        gain.gain.setValueAtTime(h.gain, now);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + h.duration);
 
         osc.connect(gain);
         gain.connect(ctx.destination);
 
         osc.start(now);
-        osc.stop(now + 1.2);
+        osc.stop(now + h.duration);
       });
     } catch (e) {
-      console.warn('Chime audio error:', e);
+      console.warn("Chime audio error:", e);
     }
   }
 
@@ -100,7 +132,7 @@ class SpeechManager {
     if (!this.synth) return;
     try {
       this.voices = this.synth.getVoices() || [];
-    } catch (e) {
+    } catch {
       this.voices = [];
     }
   }
@@ -111,81 +143,107 @@ class SpeechManager {
   }
 
   notify() {
-    this.listeners.forEach(fn => fn({
-      isPlaying: this.isPlaying,
-      isPaused: this.isPaused,
-      currentText: this.currentText,
-      rate: this.currentRate
-    }));
+    const total = this.queue.length || 1;
+    const progress = this.isPlaying
+      ? Math.min(100, Math.round(((this.currentIndex + 1) / total) * 100))
+      : 0;
+    const activeSentence = this.queue[this.currentIndex] || this.currentText;
+
+    this.listeners.forEach(fn =>
+      fn({
+        isPlaying: this.isPlaying,
+        isPaused: this.isPaused,
+        currentText: this.currentText,
+        activeSentence,
+        progress,
+        rate: this.currentRate
+      })
+    );
   }
 
   getBestVoice(langCode) {
-    // Only search voice on desktop or if voices list is populated
     if (!this.voices || this.voices.length === 0) {
       this.loadVoices();
     }
     if (!this.voices || this.voices.length === 0) return null;
 
-    const isMobile = typeof navigator !== 'undefined' && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-    // On iOS Safari, forcing voice object often causes silent failure; rely on utterance.lang
-    if (isMobile && /iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+    // On iOS Safari, setting utterance.voice explicitly can cause silent playback; rely on utterance.lang
+    if (
+      typeof navigator !== "undefined" &&
+      /iPhone|iPad|iPod/i.test(navigator.userAgent)
+    ) {
       return null;
     }
 
     const langVoiceMap = {
-      'zh-TW': ['zh-TW', 'zh-HK', 'zh'],
-      'en': ['en-US', 'en-GB', 'en'],
-      'ja': ['ja-JP', 'ja'],
-      'ko': ['ko-KR', 'ko']
+      "zh-TW": ["zh-TW", "zh-HK", "zh"],
+      en: ["en-US", "en-GB", "en"],
+      ja: ["ja-JP", "ja"],
+      ko: ["ko-KR", "ko"]
     };
 
     const targetCodes = langVoiceMap[langCode] || [langCode];
 
     for (const code of targetCodes) {
-      const matched = this.voices.filter(v => v.lang && v.lang.replace('_', '-').toLowerCase().startsWith(code.toLowerCase()));
+      const matched = this.voices.filter(
+        v =>
+          v.lang &&
+          v.lang
+            .replace("_", "-")
+            .toLowerCase()
+            .startsWith(code.toLowerCase())
+      );
       if (matched.length > 0) {
-        return matched[0];
+        // Prefer natural / premium voices if available
+        const premium = matched.find(v =>
+          /natural|premium|google|siri|meijia|kyoko|yuna/i.test(v.name)
+        );
+        return premium || matched[0];
       }
     }
 
     return null;
   }
 
-  speak(text, langCode = 'zh-TW', rate = 1.0, onFinish = null) {
-    if (!this.synth) {
-      console.warn('SpeechSynthesis is not supported on this browser.');
-      return false;
+  speak(text, langCode = "zh-TW", rate = 1.0, onFinish = null) {
+    if (!this.synth || !text || !text.trim()) return false;
+
+    if (this.speakTimer) {
+      clearTimeout(this.speakTimer);
+      this.speakTimer = null;
     }
 
-    if (!text || !text.trim()) return false;
-
-    // 1. Play immediate audible chime so visitor immediately hears audio confirmation
     this.playTempleChime();
 
-    this.currentText = text;
+    this.currentText = text.trim();
+    this.currentLang = langCode;
     this.currentRate = rate;
+    this.queue = splitIntoSentences(this.currentText);
+    this.currentIndex = 0;
 
-    const voiceLangMap = {
-      'zh-TW': 'zh-TW',
-      'en': 'en-US',
-      'ja': 'ja-JP',
-      'ko': 'ko-KR'
-    };
-    const targetLang = voiceLangMap[langCode] || 'zh-TW';
-
-    // Avoid immediate cancel-then-speak bug on WebKit:
-    // Only cancel if actively speaking
     if (this.synth.speaking || this.synth.pending) {
       try {
         this.synth.cancel();
-      } catch (e) {}
+      } catch {}
     }
 
-    const executeSpeak = () => {
+    const speakNextSentence = () => {
+      if (this.currentIndex >= this.queue.length) {
+        this.isPlaying = false;
+        this.isPaused = false;
+        this.currentUtterance = null;
+        this.notify();
+        if (onFinish) onFinish();
+        return;
+      }
+
+      const sentence = this.queue[this.currentIndex];
+      const targetLang = VOICE_LANG_MAP[langCode] || "zh-TW";
+
       try {
-        const utterance = new SpeechSynthesisUtterance(text);
+        const utterance = new SpeechSynthesisUtterance(sentence);
         utterance.lang = targetLang;
-        utterance.rate = rate;
+        utterance.rate = this.currentRate;
         utterance.pitch = 1.0;
         utterance.volume = 1.0;
 
@@ -201,15 +259,11 @@ class SpeechManager {
         };
 
         utterance.onend = () => {
-          this.isPlaying = false;
-          this.isPaused = false;
-          this.currentUtterance = null;
-          this.notify();
-          if (onFinish) onFinish();
+          this.currentIndex += 1;
+          speakNextSentence();
         };
 
-        utterance.onerror = (e) => {
-          console.warn('Speech synthesis utterance error:', e);
+        utterance.onerror = () => {
           this.isPlaying = false;
           this.isPaused = false;
           this.currentUtterance = null;
@@ -218,43 +272,52 @@ class SpeechManager {
 
         this.currentUtterance = utterance;
         this.synth.speak(utterance);
-        
-        // iOS workaround: resume if synth paused
+
         if (this.synth.paused) {
           this.synth.resume();
         }
       } catch (err) {
-        console.error('Speech execute failed:', err);
+        console.error("TTS sentence error:", err);
       }
     };
 
-    // A tiny 30ms delay avoids the iOS cancel-race condition
-    setTimeout(executeSpeak, 40);
+    // 35ms delay avoids WebKit cancel/speak race condition
+    this.speakTimer = setTimeout(speakNextSentence, 35);
     return true;
   }
 
   pause() {
     if (this.synth && this.isPlaying && !this.isPaused) {
-      this.synth.pause();
-      this.isPaused = true;
-      this.notify();
+      try {
+        this.synth.pause();
+        this.isPaused = true;
+        this.notify();
+      } catch {}
     }
   }
 
   resume() {
     if (this.synth && this.isPlaying && this.isPaused) {
-      this.synth.resume();
-      this.isPaused = false;
-      this.notify();
+      try {
+        this.synth.resume();
+        this.isPaused = false;
+        this.notify();
+      } catch {}
     }
   }
 
   stop() {
+    if (this.speakTimer) {
+      clearTimeout(this.speakTimer);
+      this.speakTimer = null;
+    }
     if (this.synth) {
       try {
         this.synth.cancel();
-      } catch (e) {}
+      } catch {}
     }
+    this.queue = [];
+    this.currentIndex = 0;
     this.isPlaying = false;
     this.isPaused = false;
     this.currentUtterance = null;
@@ -264,9 +327,7 @@ class SpeechManager {
   setRate(rate) {
     this.currentRate = rate;
     if (this.isPlaying && this.currentText) {
-      const current = this.currentText;
-      const lang = this.currentUtterance ? this.currentUtterance.lang : 'zh-TW';
-      this.speak(current, lang, rate);
+      this.speak(this.currentText, this.currentLang, rate);
     } else {
       this.notify();
     }
@@ -274,3 +335,35 @@ class SpeechManager {
 }
 
 export const speechManager = new SpeechManager();
+
+/**
+ * Web Speech Recognition (ASR) Helper for Multilingual Voice Input in AI Chat
+ */
+export function createVoiceRecognizer(langCode = "zh-TW", { onResult, onError, onEnd }) {
+  if (typeof window === "undefined") return null;
+  const SpeechRecognition =
+    window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) return null;
+
+  const recognition = new SpeechRecognition();
+  recognition.lang = VOICE_LANG_MAP[langCode] || "zh-TW";
+  recognition.interimResults = false;
+  recognition.maxAlternatives = 1;
+
+  recognition.onresult = event => {
+    const transcript = event.results?.[0]?.[0]?.transcript;
+    if (transcript && onResult) {
+      onResult(transcript);
+    }
+  };
+
+  recognition.onerror = event => {
+    if (onError) onError(event.error);
+  };
+
+  recognition.onend = () => {
+    if (onEnd) onEnd();
+  };
+
+  return recognition;
+}

@@ -10,6 +10,7 @@ import ArchitectureInfoModal from './components/ArchitectureInfoModal';
 import AiChatDrawer from './components/AiChatDrawer';
 import PanoramaViewer from './components/PanoramaViewer';
 import HotspotModal from './components/HotspotModal';
+import SmartDeityFinder from './components/SmartDeityFinder';
 import { fetchHistory, fetchVisitingSteps, fetchFaqs, fetchHotspotGuide } from './utils/api';
 import { speechManager } from './utils/tts';
 import { Volume2, Sparkles, Sliders, ShieldCheck, Heart, Scroll, Compass, MapPin, ExternalLink } from 'lucide-react';
@@ -243,6 +244,12 @@ export default function App() {
           onPlayAudio={handlePlayAudio}
         />
 
+        {/* SECTION 2.5: Smart Deity Wish Navigator & Digital Moon Blocks (Jiao-Bei) Simulator */}
+        <SmartDeityFinder
+          currentLang={currentLang}
+          onPlayAudio={handlePlayAudio}
+        />
+
         {/* SECTION 3: AI Docent Interactive Callout Banner (10% Tier) */}
         <section className="my-8 p-6 rounded-2xl bg-gradient-to-r from-amber-950/10 via-amber-900/10 to-red-950/10 border-2 border-temple-gold/40 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center space-x-4">
@@ -254,7 +261,10 @@ export default function App() {
                 {strings.askAiTitle}
               </h3>
               <p className="text-xs text-zinc-600 font-sans mt-0.5 max-w-md">
-                遇到特殊的祈願問題、神明由來或不知如何參拜？AI 導覽員隨時為您在線解答！
+                {currentLang === 'zh-TW' && "遇到特殊的祈願問題、雙重問題（如：拜月老＋點幾支香）或神明典故？智慧語意引擎支援語音輸入與雙重意圖合成！"}
+                {currentLang === 'en' && "Have a multi-part question (e.g., Matchmaker + incense count) or special prayer inquiry? Our Smart Semantic Engine supports voice input and multi-intent synthesis!"}
+                {currentLang === 'ja' && "複合的な質問（例：月下老人＋線香の本数）や特別な参拝の疑問も、音声入力対応のスマートAIガイドが即座にお答えします！"}
+                {currentLang === 'ko' && "복합 질문(예: 월하노인 + 향 개수)이나 특별한 참배 궁금증도 음성 입력을 지원하는 스마트 AI 도슨트가 즉시 답변해 드립니다!"}
               </p>
             </div>
           </div>
@@ -264,7 +274,12 @@ export default function App() {
             className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-temple-red hover:bg-temple-darkred text-white font-medium text-xs sm:text-sm flex items-center justify-center space-x-2 shadow-md transition active:scale-95 shrink-0"
           >
             <Sparkles className="w-4 h-4 text-amber-200" />
-            <span>立即開啟 AI 對話</span>
+            <span>
+              {currentLang === 'zh-TW' && "立即開啟 AI 智慧對話"}
+              {currentLang === 'en' && "Open Smart AI Docent"}
+              {currentLang === 'ja' && "AIガイドを開く"}
+              {currentLang === 'ko' && "스마트 AI 대화 열기"}
+            </span>
           </button>
         </section>
 
@@ -273,7 +288,7 @@ export default function App() {
           <div className="flex items-center space-x-2">
             <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
             <span className="font-medium text-zinc-800">
-              系統運行規範符合 Skill.md 雙層分流標準
+              系統運行規範符合 Skill.md 雙層分流標準（含 N-gram 語意理解與多意圖合成引擎）
             </span>
           </div>
           <div className="flex items-center space-x-2">
@@ -315,6 +330,7 @@ export default function App() {
         currentLang={currentLang}
         hotspotData={hotspotData}
         onPlayAudio={handlePlayAudio}
+        onSwitchHotspot={(id) => handleHotspotTriggered(id)}
       />
 
       <HistoryModal

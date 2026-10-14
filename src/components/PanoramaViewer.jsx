@@ -1,15 +1,18 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Compass, Maximize2, Minimize2, Volume2, Sparkles, Eye, CheckCircle2, RefreshCw } from 'lucide-react';
+import { Maximize2, Minimize2, Volume2, Sparkles, RefreshCw } from 'lucide-react';
+import { getAllHotspotsSummary } from '../core/semanticEngine';
 
-export default function PanoramaViewer({ 
-  currentLang, 
-  onHotspotTriggered, 
-  activeHotspot 
+export default function PanoramaViewer({
+  currentLang,
+  onHotspotTriggered,
+  activeHotspot
 }) {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isIframeLoaded, setIsIframeLoaded] = useState(false);
   const [lastTriggeredTime, setLastTriggeredTime] = useState(null);
   const containerRef = useRef(null);
+
+  const hotspotSummaries = getAllHotspotsSummary(currentLang);
 
   // Listen to postMessage from GoThru iframe
   useEffect(() => {
@@ -18,30 +21,30 @@ export default function PanoramaViewer({
       if (typeof data === 'string') {
         try {
           data = JSON.parse(data);
-        } catch (e) {
-          // If the message is a raw string matching hotspot keywords
-          if (typeof data === 'string' && (
-            data.includes('guanyin') || 
-            data.includes('stone') || 
-            data.includes('lion') || 
+        } catch {
+          if (
+            data.includes('guanyin') ||
+            data.includes('stone') ||
+            data.includes('lion') ||
             data.includes('gothru') ||
             data.includes('shishi')
-          )) {
+          ) {
             data = { type: 'gothru_hotspot', hotspot_id: 'guanyin_hall' };
           }
         }
       }
 
-      if (data && (
-        data.type === 'gothru_hotspot' || 
-        data.hotspot_id || 
-        data.action === 'guide_stone_lion' ||
-        data.action === 'stone_lion' ||
-        data.target === 'stone_lion' ||
-        data.target === 'guanyin_hall'
-      )) {
-        console.log('[GoThru postMessage received]:', data);
-        const hotspotId = data.hotspot_id || data.action || data.target || 'guanyin_hall';
+      if (
+        data &&
+        (data.type === 'gothru_hotspot' ||
+          data.hotspot_id ||
+          data.action === 'guide_stone_lion' ||
+          data.action === 'stone_lion' ||
+          data.target === 'stone_lion' ||
+          data.target === 'guanyin_hall')
+      ) {
+        const hotspotId =
+          data.hotspot_id || data.action || data.target || 'guanyin_hall';
         setLastTriggeredTime(new Date().toLocaleTimeString());
         if (onHotspotTriggered) {
           onHotspotTriggered(hotspotId, data.lang);
@@ -56,11 +59,15 @@ export default function PanoramaViewer({
   const toggleFullscreen = () => {
     if (!containerRef.current) return;
     if (!document.fullscreenElement) {
-      containerRef.current.requestFullscreen().then(() => setIsFullscreen(true)).catch(err => {
-        console.warn('Fullscreen request failed:', err);
-      });
+      containerRef.current
+        .requestFullscreen()
+        .then(() => setIsFullscreen(true))
+        .catch(() => {});
     } else {
-      document.exitFullscreen().then(() => setIsFullscreen(false)).catch(() => {});
+      document
+        .exitFullscreen()
+        .then(() => setIsFullscreen(false))
+        .catch(() => {});
     }
   };
 
@@ -69,7 +76,8 @@ export default function PanoramaViewer({
       setIsFullscreen(!!document.fullscreenElement);
     };
     document.addEventListener('fullscreenchange', onFullscreenChange);
-    return () => document.removeEventListener('fullscreenchange', onFullscreenChange);
+    return () =>
+      document.removeEventListener('fullscreenchange', onFullscreenChange);
   }, []);
 
   return (
@@ -80,14 +88,23 @@ export default function PanoramaViewer({
           <div className="flex items-center space-x-2">
             <span className="w-1.5 h-4 bg-temple-red rounded-full"></span>
             <h2 className="text-base sm:text-lg font-serif font-bold text-temple-stone flex items-center space-x-2">
-              <span>艋舺龍山寺 360° 實景導覽（GoThru 全景）</span>
+              <span>
+                {currentLang === 'zh-TW' && '艋舺龍山寺 360° 實景與建築國寶導覽'}
+                {currentLang === 'en' && '360° Virtual Tour & Architectural Treasures'}
+                {currentLang === 'ja' && '360°パノラマ＆国宝建築ガイド'}
+                {currentLang === 'ko' && '360° 파노라마 및 국보 건축물 가이드'}
+              </span>
             </h2>
           </div>
           <p className="text-xs text-zinc-500 font-sans mt-0.5">
-            {currentLang === 'zh-TW' && "點擊全景圖中「石獅」或建築熱點，自動連動多語系語音導覽"}
-            {currentLang === 'en' && "Tap the 'Stone Lion' or architectural hotspots in the 360° tour for multilingual audio"}
-            {currentLang === 'ja' && "全景内の「石獅子」や各熱点をタップすると、自動で多言語音声ガイドが流れます"}
-            {currentLang === 'ko' && "360° 파노라마의 '석사자' 또는 핫스팟을 터치하면 다국어 음성 가이드가 연동됩니다"}
+            {currentLang === 'zh-TW' &&
+              '旋轉全景探索古蹟，或點擊下方建築熱點按鈕立即聆聽多語系解說'}
+            {currentLang === 'en' &&
+              'Rotate the 360° tour or tap the architectural hotspots below for instant audio'}
+            {currentLang === 'ja' &&
+              'パノラマを回転させるか、下の建築スポットボタンを押すと多言語音声解説が流れます'}
+            {currentLang === 'ko' &&
+              '파노라마를 회전하거나 아래의 건축 핫스팟 버튼을 누르면 다국어 음성 해설이 재생됩니다'}
           </p>
         </div>
 
@@ -95,10 +112,10 @@ export default function PanoramaViewer({
         <div className="flex items-center space-x-2">
           <span className="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-300 text-emerald-800 text-[11px] font-mono shadow-2xs">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span>postMessage 監聽中</span>
+            <span>360° 雙向熱點連動</span>
             {lastTriggeredTime && (
               <span className="text-emerald-600 font-bold ml-1">
-                (已觸發: {lastTriggeredTime})
+                ({lastTriggeredTime})
               </span>
             )}
           </span>
@@ -106,22 +123,30 @@ export default function PanoramaViewer({
           <button
             onClick={toggleFullscreen}
             className="p-1.5 rounded-lg bg-white hover:bg-zinc-100 border border-zinc-300 text-zinc-700 hover:text-black transition"
-            title={isFullscreen ? "離開全螢幕" : "全螢幕全景"}
+            title={isFullscreen ? '離開全螢幕' : '全螢幕全景'}
           >
-            {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+            {isFullscreen ? (
+              <Minimize2 className="w-4 h-4" />
+            ) : (
+              <Maximize2 className="w-4 h-4" />
+            )}
           </button>
         </div>
       </div>
 
       {/* 360 Panorama Iframe Container */}
-      <div className={`relative rounded-2xl overflow-hidden border-2 border-temple-gold shadow-xl bg-zinc-950 transition-all ${
-        isFullscreen ? 'fixed inset-0 z-50 rounded-none border-0' : 'h-[360px] sm:h-[480px] md:h-[540px]'
-      }`}>
+      <div
+        className={`relative rounded-2xl overflow-hidden border-2 border-temple-gold shadow-xl bg-zinc-950 transition-all ${
+          isFullscreen
+            ? 'fixed inset-0 z-50 rounded-none border-0'
+            : 'h-[380px] sm:h-[480px] md:h-[540px]'
+        }`}
+      >
         {/* Loading Spinner */}
         {!isIframeLoaded && (
           <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-zinc-900/90 text-amber-200 text-xs">
             <RefreshCw className="w-6 h-6 animate-spin text-temple-gold mb-2" />
-            <span>載入 360° 全景圖 (GoThru)...</span>
+            <span>載入 360° 實景導覽 (GoThru)...</span>
           </div>
         )}
 
@@ -138,37 +163,43 @@ export default function PanoramaViewer({
 
         {/* Overlay Hotspot Hint Pill */}
         <div className="absolute top-3 left-3 right-3 sm:right-auto z-20 pointer-events-none">
-          <div className="bg-temple-charcoal/90 backdrop-blur-md border border-temple-gold/60 text-white px-3 py-2 rounded-xl shadow-lg text-xs flex items-center space-x-2">
+          <div className="bg-temple-charcoal/90 backdrop-blur-md border border-temple-gold/60 text-white px-3 py-1.5 rounded-xl shadow-lg text-xs flex items-center space-x-2">
             <Sparkles className="w-4 h-4 text-amber-300 shrink-0 animate-pulse" />
             <span className="font-serif">
-              {currentLang === 'zh-TW' && "請在全景中旋轉找到「三川殿石獅」，點擊即自動以您的語言解說！"}
-              {currentLang === 'en' && "Rotate to find the 'Stone Lions' and tap to trigger instant audio!"}
-              {currentLang === 'ja' && "全景を回転して「石獅子」を探し、タップすると日本語で解説が流れます！"}
-              {currentLang === 'ko' && "파노라마를 돌려 '석사자'를 찾아 터치하면 한국어 음성 해설이 시작됩니다!"}
+              {currentLang === 'zh-TW' &&
+                '點擊全景中「石獅」熱點或下方快捷鈕，即刻啟動語音導覽！'}
+              {currentLang === 'en' &&
+                "Tap the 'Stone Lions' hotspot in 360° or use the quick buttons below!"}
+              {currentLang === 'ja' &&
+                'パノラマ内の「石獅子」または下のボタンをタップして音声ガイドを再生！'}
+              {currentLang === 'ko' &&
+                "파노라마 속 '석사자' 또는 아래 버튼을 눌러 음성 가이드를 시작하세요!"}
             </span>
           </div>
         </div>
 
-        {/* Hotspot Direct Action Bar (at bottom of viewer for guaranteed native audio) */}
-        <div className="absolute bottom-3 left-3 right-3 z-20 flex flex-wrap items-center justify-between gap-2 pointer-events-auto">
-          <button
-            onClick={() => onHotspotTriggered('guanyin_hall')}
-            className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-temple-red via-red-700 to-amber-700 hover:from-red-600 hover:to-amber-600 text-white text-xs sm:text-sm font-serif font-black shadow-2xl border-2 border-temple-gold flex items-center space-x-2 transition active:scale-95 backdrop-blur-md ring-2 ring-red-950/60"
-            title="點擊立即播放石獅語音導覽"
-          >
-            <span className="text-lg">🦁</span>
-            <span>
-              {currentLang === 'zh-TW' && "點此播放「三川殿石獅」語音導覽"}
-              {currentLang === 'en' && "Play 'Stone Lions' Audio Guide"}
-              {currentLang === 'ja' && "「青斗石獅子」音声ガイドを再生"}
-              {currentLang === 'ko' && "'청두 석사자' 음성 가이드 재생"}
-            </span>
-            <Volume2 className="w-4 h-4 text-amber-200 fill-current animate-pulse" />
-          </button>
-
-          <span className="hidden sm:inline-flex items-center space-x-1 px-2.5 py-1 rounded-lg bg-black/60 backdrop-blur-sm text-[11px] text-amber-200 border border-amber-400/30">
-            <span>🔊 點擊按鈕或熱點即刻發聲</span>
-          </span>
+        {/* Multi-Hotspot Interactive Dock at Bottom of Viewer */}
+        <div className="absolute bottom-3 left-3 right-3 z-20 flex flex-wrap items-center gap-2 pointer-events-auto">
+          {hotspotSummaries.map((spot) => {
+            const isSelected = activeHotspot === spot.id;
+            return (
+              <button
+                key={spot.id}
+                onClick={() => onHotspotTriggered(spot.id)}
+                className={`px-3 py-2 rounded-xl text-xs font-serif font-bold shadow-xl border-2 flex items-center space-x-1.5 transition active:scale-95 backdrop-blur-md ${
+                  isSelected
+                    ? 'bg-gradient-to-r from-temple-red via-red-700 to-amber-700 text-white border-amber-300 ring-2 ring-amber-400/50'
+                    : 'bg-temple-charcoal/90 hover:bg-temple-red/90 text-amber-50 border-temple-gold/70'
+                }`}
+              >
+                <span className="text-base">{spot.icon}</span>
+                <span className="truncate max-w-[180px] sm:max-w-none">
+                  {spot.title}
+                </span>
+                <Volume2 className="w-3.5 h-3.5 text-amber-300 shrink-0 animate-pulse" />
+              </button>
+            );
+          })}
         </div>
       </div>
     </section>
