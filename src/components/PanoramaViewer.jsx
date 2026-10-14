@@ -153,7 +153,7 @@ export default function PanoramaViewer({
         className={`relative rounded-2xl overflow-hidden border-2 border-temple-gold shadow-xl bg-zinc-950 transition-all ${
           isFullscreen
             ? 'fixed inset-0 z-50 rounded-none border-0'
-            : 'h-[380px] sm:h-[480px] md:h-[540px]'
+            : 'h-[540px] sm:h-[560px] md:h-[600px]'
         }`}
       >
         {/* Loading Spinner */}
