@@ -98,13 +98,13 @@ export default function PanoramaViewer({
           </div>
           <p className="text-xs text-zinc-500 font-sans mt-0.5">
             {currentLang === 'zh-TW' &&
-              '旋轉全景探索古蹟，或點擊下方建築熱點按鈕立即聆聽多語系解說'}
+              '旋轉全景探索古蹟，點擊畫面中的熱點圖示即可聆聽多語系解說'}
             {currentLang === 'en' &&
-              'Rotate the 360° tour or tap the architectural hotspots below for instant audio'}
+              'Rotate the 360° tour and tap any hotspot icon for instant multilingual audio'}
             {currentLang === 'ja' &&
-              'パノラマを回転させるか、下の建築スポットボタンを押すと多言語音声解説が流れます'}
+              'パノラマを回転させ、画面内のスポットアイコンをタップすると音声解説が流れます'}
             {currentLang === 'ko' &&
-              '파노라마를 회전하거나 아래의 건축 핫스팟 버튼을 누르면 다국어 음성 해설이 재생됩니다'}
+              '파노라마를 회전하며 화면 속 핫스팟 아이콘을 누르면 다국어 음성 해설이 재생됩니다'}
           </p>
         </div>
 
@@ -163,43 +163,19 @@ export default function PanoramaViewer({
 
         {/* Overlay Hotspot Hint Pill */}
         <div className="absolute top-3 left-3 right-3 sm:right-auto z-20 pointer-events-none">
-          <div className="bg-temple-charcoal/90 backdrop-blur-md border border-temple-gold/60 text-white px-3 py-1.5 rounded-xl shadow-lg text-xs flex items-center space-x-2">
+          <div className="bg-temple-charcoal/85 backdrop-blur-md border border-temple-gold/60 text-white px-3 py-1.5 rounded-xl shadow-lg text-xs flex items-center space-x-2">
             <Sparkles className="w-4 h-4 text-amber-300 shrink-0 animate-pulse" />
             <span className="font-serif">
               {currentLang === 'zh-TW' &&
-                '點擊全景中「石獅」熱點或下方快捷鈕，即刻啟動語音導覽！'}
+                '點擊全景畫面中的熱點，即刻啟動語音導覽！'}
               {currentLang === 'en' &&
-                "Tap the 'Stone Lions' hotspot in 360° or use the quick buttons below!"}
+                'Tap any hotspot in the 360° view to start the audio guide!'}
               {currentLang === 'ja' &&
-                'パノラマ内の「石獅子」または下のボタンをタップして音声ガイドを再生！'}
+                'パノラマ内のスポットをタップして音声ガイドを再生！'}
               {currentLang === 'ko' &&
-                "파노라마 속 '석사자' 또는 아래 버튼을 눌러 음성 가이드를 시작하세요!"}
+                '파노라마 화면 속 핫스팟을 눌러 음성 가이드를 시작하세요!'}
             </span>
           </div>
-        </div>
-
-        {/* Multi-Hotspot Interactive Dock at Bottom of Viewer */}
-        <div className="absolute bottom-3 left-3 right-3 z-20 flex flex-wrap items-center gap-2 pointer-events-auto">
-          {hotspotSummaries.map((spot) => {
-            const isSelected = activeHotspot === spot.id;
-            return (
-              <button
-                key={spot.id}
-                onClick={() => onHotspotTriggered(spot.id)}
-                className={`px-3 py-2 rounded-xl text-xs font-serif font-bold shadow-xl border-2 flex items-center space-x-1.5 transition active:scale-95 backdrop-blur-md ${
-                  isSelected
-                    ? 'bg-gradient-to-r from-temple-red via-red-700 to-amber-700 text-white border-amber-300 ring-2 ring-amber-400/50'
-                    : 'bg-temple-charcoal/90 hover:bg-temple-red/90 text-amber-50 border-temple-gold/70'
-                }`}
-              >
-                <span className="text-base">{spot.icon}</span>
-                <span className="truncate max-w-[180px] sm:max-w-none">
-                  {spot.title}
-                </span>
-                <Volume2 className="w-3.5 h-3.5 text-amber-300 shrink-0 animate-pulse" />
-              </button>
-            );
-          })}
         </div>
       </div>
     </section>
