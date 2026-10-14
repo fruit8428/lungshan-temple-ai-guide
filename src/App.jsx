@@ -95,19 +95,19 @@ export default function App() {
     }
   };
 
-  // 3. Listen to URL parameter or Hash change for Hotspot deep-links
+  // 3. Listen to URL parameter or Hash change for Hotspot deep-links (supports ?hotspot=spot_01 or ?spot=spot_01)
   useEffect(() => {
     const checkUrlHotspot = () => {
       try {
         const params = new URLSearchParams(window.location.search);
-        const hotspotParam = params.get('hotspot');
+        const hotspotParam = params.get('hotspot') || params.get('spot');
         const hash = window.location.hash;
         
         if (hotspotParam) {
           handleHotspotTriggered(hotspotParam);
-        } else if (hash && hash.includes('hotspot')) {
-          const id = hash.replace('#hotspot-', '').replace('#hotspot=', '').replace('#', '');
-          handleHotspotTriggered(id || 'guanyin_hall');
+        } else if (hash && (hash.includes('hotspot') || hash.includes('spot'))) {
+          const id = hash.replace('#hotspot-', '').replace('#hotspot=', '').replace('#spot-', '').replace('#spot=', '').replace('#', '');
+          handleHotspotTriggered(id || 'spot_01');
         }
       } catch (e) {}
     };
@@ -172,22 +172,26 @@ export default function App() {
           <div className="relative z-10">
             <div className="flex flex-wrap items-center gap-2 mb-3">
               <span className="px-2.5 py-0.5 rounded-full bg-temple-gold/20 text-temple-gold border border-temple-gold/40 text-xs font-serif font-bold">
-                艋舺香火 • 國定古蹟
+                {historyData?.badge || "艋舺香火 • 國定古蹟"}
               </span>
               <span className="px-2.5 py-0.5 rounded-full bg-emerald-950/80 text-emerald-300 border border-emerald-500/40 text-xs font-mono">
-                90% 快取 / 10% AI 雙層架構
+                90% 快取 / 10% AI 雙層架構 • Supabase 雲端連動
               </span>
             </div>
 
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-serif font-black tracking-wide text-amber-50 mb-2 leading-tight">
-              {strings.appTitle}
+              {historyData?.templeName || strings.appTitle}
             </h1>
 
             <p className="text-sm sm:text-base text-zinc-200 font-sans max-w-2xl leading-relaxed mb-6">
-              {currentLang === 'zh-TW' && "創建於 1738 年，供奉觀世音菩薩及百餘尊神明。本系統依據信眾手機語言自動配適，點擊按鈕即享零延遲語音解說；亦可向 AI 導覽員隨時提問。"}
-              {currentLang === 'en' && "Founded in 1738, enshrining Guanyin Bodhisattva and over 100 deities. Automatically adapted to your language with zero-latency cached voice tours and interactive AI docent."}
-              {currentLang === 'ja' && "1738年創建、観世音菩薩と100尊以上の神仏を祀る台北最古の名刹。スマートフォンの言語を自動判別し、ボタン一つで瞬時に多言語音声ガイドをお届けします。"}
-              {currentLang === 'ko' && "1738년 창건되어 관세음보살과 100여 위의 신령을 모신 타이베이 대표 사찰입니다. 기기 언어를 자동 감지하여 지연 없이 즉시 음성 가이드를 제공합니다."}
+              {historyData?.heroIntro || (
+                <>
+                  {currentLang === 'zh-TW' && "創建於 1738 年，供奉觀世音菩薩及百餘尊神明。本系統依據信眾手機語言自動配適，點擊按鈕即享零延遲語音解說；亦可向 AI 導覽員隨時提問。"}
+                  {currentLang === 'en' && "Founded in 1738, enshrining Guanyin Bodhisattva and over 100 deities. Automatically adapted to your language with zero-latency cached voice tours and interactive AI docent."}
+                  {currentLang === 'ja' && "1738年創建、観世音菩薩と100尊以上の神仏を祀る台北最古の名刹。スマートフォンの言語を自動判別し、ボタン一つで瞬時に多言語音声ガイドをお届けします。"}
+                  {currentLang === 'ko' && "1738년 창건되어 관세음보살과 100여 위의 신령을 모신 타이베이 대표 사찰입니다. 기기 언어를 자동 감지하여 지연 없이 즉시 음성 가이드를 제공합니다."}
+                </>
+              )}
             </p>
 
             {/* Hero Action Buttons */}
@@ -220,6 +224,8 @@ export default function App() {
           currentLang={currentLang}
           onHotspotTriggered={handleHotspotTriggered}
           activeHotspot={activeHotspotId}
+          gothruUrl={historyData?.gothruUrl || "https://tourmkr.com/F1vWDe52rp"}
+          templeName={historyData?.templeName}
         />
 
         {/* SECTION 1: 4 Core FAQ Buttons (90% Fast-tier Route as specified in Doc 1 & Doc 2) */}
@@ -357,14 +363,14 @@ export default function App() {
         <div className="max-w-4xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
           <div>
             <p className="font-serif text-amber-200 font-semibold">
-              國定古蹟 艋舺龍山寺 (Bangka Lungshan Temple)
+              {historyData?.templeName || "國定古蹟 艋舺龍山寺 (Bangka Lungshan Temple)"}
             </p>
             <p className="text-[11px] text-zinc-500 mt-0.5">
-              地址：台北市萬華區廣州街 211 號 • 開放時間：每日 06:00 - 22:00
+              {historyData?.addressInfo || "地址：台北市萬華區廣州街 211 號 • 開放時間：每日 06:00 - 22:00"}
             </p>
           </div>
           <div className="text-[11px] text-zinc-500 font-mono">
-            RAG + Human-in-the-Loop AI Tour Guide
+            Supabase Multi-Tenant RAG + HITL AI Tour Guide
           </div>
         </div>
       </footer>

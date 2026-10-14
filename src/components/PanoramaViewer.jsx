@@ -1,20 +1,18 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Maximize2, Minimize2, Volume2, Sparkles, RefreshCw } from 'lucide-react';
-import { getAllHotspotsSummary } from '../core/semanticEngine';
+import { Maximize2, Minimize2, Sparkles, RefreshCw } from 'lucide-react';
 
 export default function PanoramaViewer({
   currentLang,
   onHotspotTriggered,
-  activeHotspot
+  gothruUrl = 'https://tourmkr.com/F1vWDe52rp',
+  templeName = ''
 }) {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isIframeLoaded, setIsIframeLoaded] = useState(false);
   const [lastTriggeredTime, setLastTriggeredTime] = useState(null);
   const containerRef = useRef(null);
 
-  const hotspotSummaries = getAllHotspotsSummary(currentLang);
-
-  // Listen to postMessage from GoThru iframe
+  // Listen to postMessage from GoThru iframe (supports standard spot_01, spot_02, spot_03 and legacy IDs)
   useEffect(() => {
     const handleMessage = (event) => {
       let data = event.data;
@@ -22,14 +20,17 @@ export default function PanoramaViewer({
         try {
           data = JSON.parse(data);
         } catch {
-          if (
+          const spotMatch = data.match(/spot_\d+/i);
+          if (spotMatch) {
+            data = { type: 'gothru_hotspot', hotspot_id: spotMatch[0].toLowerCase() };
+          } else if (
             data.includes('guanyin') ||
             data.includes('stone') ||
             data.includes('lion') ||
             data.includes('gothru') ||
             data.includes('shishi')
           ) {
-            data = { type: 'gothru_hotspot', hotspot_id: 'guanyin_hall' };
+            data = { type: 'gothru_hotspot', hotspot_id: 'spot_01' };
           }
         }
       }
@@ -37,14 +38,22 @@ export default function PanoramaViewer({
       if (
         data &&
         (data.type === 'gothru_hotspot' ||
+          data.type === 'TEMPLE_HOTSPOT' ||
           data.hotspot_id ||
+          data.code ||
+          data.spot_id ||
           data.action === 'guide_stone_lion' ||
           data.action === 'stone_lion' ||
           data.target === 'stone_lion' ||
           data.target === 'guanyin_hall')
       ) {
         const hotspotId =
-          data.hotspot_id || data.action || data.target || 'guanyin_hall';
+          data.hotspot_id ||
+          data.code ||
+          data.spot_id ||
+          data.action ||
+          data.target ||
+          'spot_01';
         setLastTriggeredTime(new Date().toLocaleTimeString());
         if (onHotspotTriggered) {
           onHotspotTriggered(hotspotId, data.lang);
@@ -80,6 +89,16 @@ export default function PanoramaViewer({
       document.removeEventListener('fullscreenchange', onFullscreenChange);
   }, []);
 
+  const displayName =
+    templeName ||
+    (currentLang === 'zh-TW'
+      ? '艋舺龍山寺'
+      : currentLang === 'en'
+      ? 'Bangka Lungshan Temple'
+      : currentLang === 'ja'
+      ? '艋舺龍山寺'
+      : '멍자 롱산사');
+
   return (
     <section className="my-8" ref={containerRef}>
       {/* Section Header */}
@@ -89,7 +108,7 @@ export default function PanoramaViewer({
             <span className="w-1.5 h-4 bg-temple-red rounded-full"></span>
             <h2 className="text-base sm:text-lg font-serif font-bold text-temple-stone flex items-center space-x-2">
               <span>
-                {currentLang === 'zh-TW' && '艋舺龍山寺 360° 實景與建築國寶導覽'}
+                {currentLang === 'zh-TW' && `${displayName} 360° 實景與建築國寶導覽`}
                 {currentLang === 'en' && '360° Virtual Tour & Architectural Treasures'}
                 {currentLang === 'ja' && '360°パノラマ＆国宝建築ガイド'}
                 {currentLang === 'ko' && '360° 파노라마 및 국보 건축물 가이드'}
@@ -166,8 +185,8 @@ export default function PanoramaViewer({
 
         {/* Embedded Iframe */}
         <iframe
-          src="https://tourmkr.com/F1vWDe52rp"
-          title="艋舺龍山寺 360 全景導覽"
+          src={gothruUrl}
+          title={`${displayName} 360 全景導覽`}
           className="w-full h-full border-0"
           allow="accelerometer; gyroscope; magnetometer; vr; xr; xr-spatial-tracking; fullscreen"
           allowFullScreen

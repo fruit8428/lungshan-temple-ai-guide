@@ -969,8 +969,11 @@ export const hotspotGuides = {
   }
 };
 
-// Alias mappings so any hotspot ID from GoThru resolves cleanly
+// Alias mappings so any hotspot ID from GoThru resolves cleanly (including standard spot_01, spot_02, spot_03)
 export const HOTSPOT_ALIASES = {
+  spot_01: "guanyin_hall",
+  spot_02: "bronze_dragon_pillar",
+  spot_03: "spiral_caisson",
   stone_lion: "guanyin_hall",
   shishi: "guanyin_hall",
   lion: "guanyin_hall",
