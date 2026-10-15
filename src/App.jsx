@@ -99,15 +99,20 @@ export default function App() {
   useEffect(() => {
     const checkUrlHotspot = () => {
       try {
-        const params = new URLSearchParams(window.location.search);
-        const hotspotParam = params.get('hotspot') || params.get('spot');
+        const url = new URL(window.location.href);
+        const hotspotParam = url.searchParams.get('hotspot') || url.searchParams.get('spot');
         const hash = window.location.hash;
         
         if (hotspotParam) {
           handleHotspotTriggered(hotspotParam);
+          // Clean up URL so refreshing or revisiting goes to the main page first
+          url.searchParams.delete('hotspot');
+          url.searchParams.delete('spot');
+          window.history.replaceState({}, '', url.pathname + (url.search ? url.search : ''));
         } else if (hash && (hash.includes('hotspot') || hash.includes('spot'))) {
           const id = hash.replace('#hotspot-', '').replace('#hotspot=', '').replace('#spot-', '').replace('#spot=', '').replace('#', '');
           handleHotspotTriggered(id || 'spot_01');
+          window.history.replaceState({}, '', url.pathname + (url.search ? url.search : ''));
         }
       } catch (e) {}
     };
@@ -115,7 +120,7 @@ export default function App() {
     checkUrlHotspot();
     window.addEventListener('hashchange', checkUrlHotspot);
     return () => window.removeEventListener('hashchange', checkUrlHotspot);
-  }, [currentLang]);
+  }, []);
 
   const handleSelectLanguage = (langCode) => {
     setCurrentLang(langCode);

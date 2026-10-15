@@ -24,10 +24,8 @@ export default function PanoramaViewer({
           if (spotMatch) {
             data = { type: 'gothru_hotspot', hotspot_id: spotMatch[0].toLowerCase() };
           } else if (
-            data.includes('guanyin') ||
-            data.includes('stone') ||
-            data.includes('lion') ||
-            data.includes('gothru') ||
+            data.includes('guanyin_hall') ||
+            data.includes('stone_lion') ||
             data.includes('shishi')
           ) {
             data = { type: 'gothru_hotspot', hotspot_id: 'spot_01' };
