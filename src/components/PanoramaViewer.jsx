@@ -127,43 +127,21 @@ export default function PanoramaViewer({
           </p>
         </div>
 
-        {/* Status Badge, Hint Pill & Fullscreen */}
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="bg-temple-charcoal text-white border border-temple-gold/60 px-3 py-1.5 rounded-xl shadow-xs text-xs flex items-center space-x-1.5">
-            <Sparkles className="w-3.5 h-3.5 text-amber-300 shrink-0 animate-pulse" />
-            <span className="font-serif">
-              {currentLang === 'zh-TW' &&
-                '點擊全景畫面中的熱點，即刻啟動語音導覽！'}
-              {currentLang === 'en' &&
-                'Tap any hotspot in the 360° view to start the audio guide!'}
-              {currentLang === 'ja' &&
-                'パノラマ内のスポットをタップして音声ガイドを再生！'}
-              {currentLang === 'ko' &&
-                '파노라마 화면 속 핫스팟을 눌러 음성 가이드를 시작하세요!'}
-            </span>
-          </div>
-
-          <span className="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-300 text-emerald-800 text-[11px] font-mono shadow-2xs">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span>360° 雙向熱點連動</span>
-            {lastTriggeredTime && (
-              <span className="text-emerald-600 font-bold ml-1">
-                ({lastTriggeredTime})
-              </span>
-            )}
+        {/* Prominent Hotspot Callout Banner */}
+        <div className="w-full sm:w-auto bg-gradient-to-r from-temple-red via-red-700 to-amber-600 text-white border-2 border-temple-gold px-4 py-2.5 rounded-2xl shadow-lg shadow-red-950/20 flex items-center justify-center sm:justify-start space-x-2.5 ring-2 ring-amber-400/30">
+          <span className="w-7 h-7 rounded-xl bg-amber-300 text-zinc-950 flex items-center justify-center shadow-xs shrink-0 animate-bounce">
+            <Sparkles className="w-4 h-4 fill-current" />
           </span>
-
-          <button
-            onClick={toggleFullscreen}
-            className="p-1.5 rounded-lg bg-white hover:bg-zinc-100 border border-zinc-300 text-zinc-700 hover:text-black transition"
-            title={isFullscreen ? '離開全螢幕' : '全螢幕全景'}
-          >
-            {isFullscreen ? (
-              <Minimize2 className="w-4 h-4" />
-            ) : (
-              <Maximize2 className="w-4 h-4" />
-            )}
-          </button>
+          <span className="font-serif font-black text-sm sm:text-base tracking-wide text-amber-50 drop-shadow-xs">
+            {currentLang === 'zh-TW' &&
+              '點擊全景畫面中的熱點，即刻啟動語音導覽！'}
+            {currentLang === 'en' &&
+              'Tap any hotspot in the 360° view to start the audio guide!'}
+            {currentLang === 'ja' &&
+              'パノラマ内のスポットをタップして音声ガイドを再生！'}
+            {currentLang === 'ko' &&
+              '파노라마 화면 속 핫스팟을 눌러 음성 가이드를 시작하세요!'}
+          </span>
         </div>
       </div>
 
