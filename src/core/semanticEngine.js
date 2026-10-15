@@ -262,7 +262,7 @@ export function evaluateTourRequest({
 }) {
   const startTime = Date.now();
   const validLang = ["zh-TW", "en", "ja", "ko"].includes(lang) ? lang : "zh-TW";
-  const combinedFaqs = [...allKnowledgeFaqs, ...dynamicFaqs];
+  const combinedFaqs = [...dynamicFaqs, ...allKnowledgeFaqs];
 
   // ============================================================================
   // STAGE 1: 90% Fast-Tier — Direct Payload Action Code Match (<0.5s, $0 Cost)

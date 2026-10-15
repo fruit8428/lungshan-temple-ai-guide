@@ -1,14 +1,14 @@
 {
-  "name": "lungshan-temple-ai-guide",
+  "name": "temple-ai-guide",
   "version": "1.0.0",
-  "description": "Bangka Lungshan Temple Multilingual AI Tour Guide System",
+  "description": "Multilingual Temple 360° & AI Tour Guide System",
   "private": true,
   "type": "module",
   "scripts": {
     "dev:server": "node server/index.js",
     "dev:client": "vite",
     "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
-    "build": "vite build",
+    "build": "vite build && node scripts/postbuild.js",
     "start": "node server/index.js"
   },
   "dependencies": {

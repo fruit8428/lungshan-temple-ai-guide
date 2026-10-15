@@ -25,6 +25,14 @@ export function getActiveTempleSlug() {
     if (fromQuery && /^[a-z0-9_-]+$/i.test(fromQuery.trim())) {
       return fromQuery.trim().toLowerCase();
     }
+    const pathname = (window.location.pathname || "").toLowerCase();
+    if (pathname.includes("/hesheng")) {
+      return "hesheng";
+    }
+    const hostname = (window.location.hostname || "").toLowerCase();
+    if (hostname.includes("hesheng")) {
+      return "hesheng";
+    }
   } catch {}
   return "lungshan";
 }

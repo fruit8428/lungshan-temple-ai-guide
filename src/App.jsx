@@ -12,14 +12,21 @@ import PanoramaViewer from './components/PanoramaViewer';
 import HotspotModal from './components/HotspotModal';
 import SmartDeityFinder from './components/SmartDeityFinder';
 import { fetchHistory, fetchVisitingSteps, fetchFaqs, fetchHotspotGuide } from './utils/api';
+import { getActiveTempleSlug } from './core/supabaseClient';
+import { HESHENG_PRESET } from './core/templePresets';
 import { speechManager } from './utils/tts';
 import { Volume2, Sparkles, Sliders, ShieldCheck, Heart, Scroll, Compass, MapPin, ExternalLink } from 'lucide-react';
 
 export default function App() {
+  const isHesheng = getActiveTempleSlug() === 'hesheng';
   const [currentLang, setCurrentLang] = useState('zh-TW');
   const [autoDetected, setAutoDetected] = useState(false);
-  const [historyData, setHistoryData] = useState(null);
-  const [visitingSteps, setVisitingSteps] = useState([]);
+  const [historyData, setHistoryData] = useState(() =>
+    isHesheng ? HESHENG_PRESET.history['zh-TW'] : null
+  );
+  const [visitingSteps, setVisitingSteps] = useState(() =>
+    isHesheng ? HESHENG_PRESET.visitingSteps['zh-TW'] : []
+  );
   const [faqs, setFaqs] = useState([]);
 
   // 360 Panorama Hotspot state
@@ -44,6 +51,15 @@ export default function App() {
       setAutoDetected(true);
     }
   }, []);
+
+  // Update browser document.title dynamically based on templeName
+  useEffect(() => {
+    if (historyData?.templeName) {
+      document.title = `${historyData.templeName} • 360° 實景與多語系 AI 語音導覽`;
+    } else if (isHesheng) {
+      document.title = '五股賀聖宮 • 360° 實景與多語系 AI 語音導覽';
+    }
+  }, [historyData?.templeName, isHesheng]);
 
   // 2. Fetch data whenever language changes
   const loadData = async (lang) => {
@@ -164,8 +180,8 @@ export default function App() {
         onOpenAiChat={() => setIsAiChatOpen(true)}
         isAudioActive={!!activeAudio}
         autoDetected={autoDetected}
-        templeName={historyData?.templeName}
-        templeBadge={historyData?.badge}
+        templeName={historyData?.templeName || (isHesheng ? "五股賀聖宮" : "艋舺龍山寺")}
+        templeBadge={historyData?.badge || (isHesheng ? "五股玄天上帝信仰中心 • 洲子洋文化地標" : "艋舺香火 • 國定古蹟")}
       />
 
       {/* Main Container */}
@@ -179,7 +195,7 @@ export default function App() {
           <div className="relative z-10">
             <div className="flex flex-wrap items-center gap-2 mb-3">
               <span className="px-2.5 py-0.5 rounded-full bg-temple-gold/20 text-temple-gold border border-temple-gold/40 text-xs font-serif font-bold">
-                {historyData?.badge || "艋舺香火 • 國定古蹟"}
+                {historyData?.badge || (isHesheng ? "五股玄天上帝信仰中心 • 洲子洋文化地標" : "艋舺香火 • 國定古蹟")}
               </span>
               <span className="px-2.5 py-0.5 rounded-full bg-emerald-950/80 text-emerald-300 border border-emerald-500/40 text-xs font-mono">
                 90% 快取 / 10% AI 雙層架構 • Supabase 雲端連動
@@ -187,17 +203,14 @@ export default function App() {
             </div>
 
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-serif font-black tracking-wide text-amber-50 mb-2 leading-tight">
-              {historyData?.templeName || strings.appTitle}
+              {historyData?.templeName || (isHesheng ? "五股賀聖宮" : strings.appTitle)}
             </h1>
 
             <p className="text-sm sm:text-base text-zinc-200 font-sans max-w-2xl leading-relaxed mb-6">
               {historyData?.heroIntro || (
-                <>
-                  {currentLang === 'zh-TW' && "創建於 1738 年，供奉觀世音菩薩及百餘尊神明。本系統依據信眾手機語言自動配適，點擊按鈕即享零延遲語音解說；亦可向 AI 導覽員隨時提問。"}
-                  {currentLang === 'en' && "Founded in 1738, enshrining Guanyin Bodhisattva and over 100 deities. Automatically adapted to your language with zero-latency cached voice tours and interactive AI docent."}
-                  {currentLang === 'ja' && "1738年創建、観世音菩薩と100尊以上の神仏を祀る台北最古の名刹。スマートフォンの言語を自動判別し、ボタン一つで瞬時に多言語音声ガイドをお届けします。"}
-                  {currentLang === 'ko' && "1738년 창건되어 관세음보살과 100여 위의 신령을 모신 타이베이 대표 사찰입니다. 기기 언어를 자동 감지하여 지연 없이 즉시 음성 가이드를 제공합니다."}
-                </>
+                isHesheng
+                  ? "主祀北極玄天上帝（上帝公），融合台灣傳統北式宮殿工藝與現代弘法精神。本系統支援 360° 實景熱點點擊與多國語音導覽。"
+                  : "創建於 1738 年，供奉觀世音菩薩及百餘尊神明。本系統依據信眾手機語言自動配適，點擊按鈕即享零延遲語音解說；亦可向 AI 導覽員隨時提問。"
               )}
             </p>
 
@@ -231,13 +244,14 @@ export default function App() {
           currentLang={currentLang}
           onHotspotTriggered={handleHotspotTriggered}
           activeHotspot={activeHotspotId}
-          gothruUrl={historyData?.gothruUrl || "https://tourmkr.com/F1vWDe52rp"}
-          templeName={historyData?.templeName}
+          gothruUrl={historyData?.gothruUrl || (isHesheng ? "https://tourmkr.com/F1Ne2636C5" : "https://tourmkr.com/F1vWDe52rp")}
+          templeName={historyData?.templeName || (isHesheng ? "五股賀聖宮" : "艋舺龍山寺")}
         />
 
         {/* SECTION 1: 4 Core FAQ Buttons (90% Fast-tier Route as specified in Doc 1 & Doc 2) */}
         <QuickFaqButtons
           currentLang={currentLang}
+          faqs={faqs}
           onPlayAudio={handlePlayAudio}
           activeFaqId={activeAudio?.topic}
         />
@@ -370,10 +384,10 @@ export default function App() {
         <div className="max-w-4xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
           <div>
             <p className="font-serif text-amber-200 font-semibold">
-              {historyData?.templeName || "國定古蹟 艋舺龍山寺 (Bangka Lungshan Temple)"}
+              {historyData?.templeName || (isHesheng ? "五股賀聖宮 (Wugu Hesheng Temple)" : "國定古蹟 艋舺龍山寺 (Bangka Lungshan Temple)")}
             </p>
             <p className="text-[11px] text-zinc-500 mt-0.5">
-              {historyData?.addressInfo || "地址：台北市萬華區廣州街 211 號 • 開放時間：每日 06:00 - 22:00"}
+              {historyData?.addressInfo || (isHesheng ? "地址：新北市五股區新五路三段 1 號 • 開放時間：每日 06:00 - 21:00" : "地址：台北市萬華區廣州街 211 號 • 開放時間：每日 06:00 - 22:00")}
             </p>
           </div>
           <div className="text-[11px] text-zinc-500 font-mono">

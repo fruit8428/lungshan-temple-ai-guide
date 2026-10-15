@@ -20,6 +20,7 @@ import {
   pickLocalized,
   insertHitlQuestionToSupabase
 } from "../core/supabaseClient.js";
+import { HESHENG_PRESET } from "../core/templePresets.js";
 
 const STORAGE_KEY_PENDING = "lungshan_pending_questions_v2";
 const STORAGE_KEY_DYNAMIC = "lungshan_dynamic_faqs_v2";
@@ -215,11 +216,13 @@ export async function clientHandleTourRequest({
     }
   } catch {}
 
+  const presetFaqs = templeSlug === "hesheng" ? HESHENG_PRESET.faqs : [];
+
   return evaluateTourRequest({
     action,
     query,
     lang,
-    dynamicFaqs: [...cloudFaqs, ...getStoredDynamicFaqs()],
+    dynamicFaqs: [...cloudFaqs, ...presetFaqs, ...getStoredDynamicFaqs()],
     onFlagPending: item => clientAddPendingQuestion(item)
   });
 }
@@ -242,8 +245,9 @@ export async function clientGetFaqs(lang = "zh-TW") {
     }
   } catch {}
 
+  const baseFaqs = templeSlug === "hesheng" ? HESHENG_PRESET.faqs : allKnowledgeFaqs;
   const dynamicFaqs = getStoredDynamicFaqs();
-  const all = [...allKnowledgeFaqs, ...dynamicFaqs];
+  const all = [...baseFaqs, ...dynamicFaqs];
   return all.map(f => ({
     id: f.id,
     action: f.action,
@@ -259,20 +263,24 @@ export async function clientGetFaqs(lang = "zh-TW") {
 
 export async function clientGetHistory(lang = "zh-TW") {
   const templeSlug = getActiveTempleSlug();
+  const localFallback =
+    templeSlug === "hesheng"
+      ? HESHENG_PRESET.history[lang] || HESHENG_PRESET.history["zh-TW"]
+      : templeHistory[lang] || templeHistory["zh-TW"];
+
   try {
     const bundle = await fetchTempleBundleFromSupabase(templeSlug);
     if (bundle && bundle.temple) {
       const t = bundle.temple;
-      const localFallback = templeHistory[lang] || templeHistory["zh-TW"];
       return {
         ...localFallback,
         templeSlug: t.temple_slug,
-        gothruUrl: t.gothru_url || "https://tourmkr.com/F1vWDe52rp",
-        badge: t.badge_zh || "國定古蹟 • 智慧導覽",
-        templeName: pickLocalized(t, "name", lang) || localFallback.title,
-        heroIntro: pickLocalized(t, "intro", lang),
-        addressInfo: t.address_zh || "",
-        title: pickLocalized(t, "name", lang) || localFallback.title,
+        gothruUrl: t.gothru_url || localFallback.gothruUrl || "https://tourmkr.com/F1vWDe52rp",
+        badge: t.badge_zh || localFallback.badge || "國定古蹟 • 智慧導覽",
+        templeName: pickLocalized(t, "name", lang) || localFallback.templeName || localFallback.title,
+        heroIntro: pickLocalized(t, "intro", lang) || localFallback.heroIntro,
+        addressInfo: t.address_zh || localFallback.addressInfo || "",
+        title: localFallback.title || pickLocalized(t, "name", lang),
         subtitle: t.badge_zh || localFallback.subtitle,
         audioScript:
           pickLocalized(t, "overview_script", lang) || localFallback.audioScript
@@ -280,7 +288,7 @@ export async function clientGetHistory(lang = "zh-TW") {
     }
   } catch {}
 
-  return templeHistory[lang] || templeHistory["zh-TW"];
+  return localFallback;
 }
 
 export async function clientGetVisitingSteps(lang = "zh-TW") {
@@ -301,6 +309,9 @@ export async function clientGetVisitingSteps(lang = "zh-TW") {
     }
   } catch {}
 
+  if (templeSlug === "hesheng") {
+    return HESHENG_PRESET.visitingSteps[lang] || HESHENG_PRESET.visitingSteps["zh-TW"];
+  }
   return visitingRouteSteps[lang] || visitingRouteSteps["zh-TW"];
 }
 

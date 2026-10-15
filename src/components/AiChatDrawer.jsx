@@ -13,48 +13,90 @@ import {
 } from 'lucide-react';
 import { fetchRoute } from '../utils/api';
 import { speechManager, createVoiceRecognizer } from '../utils/tts';
+import { getActiveTempleSlug } from '../core/supabaseClient';
 
-const WELCOME_MESSAGES = {
-  'zh-TW':
-    '信眾您好！我是艋舺龍山寺的 AI 智慧導覽員。您可以透過「文字」或「語音麥克風」向我詢問各殿神明祈願方式（如文昌考運、華陀健康、關公財運、月老紅線還願、二戰不壞觀音傳奇或周邊艋舺美食），很榮幸為您服務！',
-  en: 'Welcome! I am the Bangka Lungshan Temple AI Docent. You may type or use the microphone to ask about deity worship (Exams, Health, Career, Love/Red String), the 1945 Air Raid Miracle, or nearby Bangka street food!',
-  ja: 'こんにちは！艋舺龍山寺のAIスマート案内員です。テキスト入力または音声マイクを使って、各神様のご利益（合格祈願・健康・金運・良縁のお礼参り）や、1945年大空襲の奇跡、周辺グルメなど何でもお尋ねください！',
-  ko: '안녕하세요! 멍자 롱산사 AI 스마트 도슨트입니다. 텍스트나 음성 마이크를 통해 신령별 참배법(시험운, 건강, 재물, 붉은 실 보답), 1945년 대공습의 기적, 주변 맛집 등 무엇이든 질문해 주세요!'
+const WELCOME_MESSAGES_BY_TEMPLE = {
+  hesheng: {
+    'zh-TW':
+      '信眾您好！我是五股賀聖宮的 AI 智慧導覽員。您可以透過「文字」或「語音麥克風」向我詢問北極玄天上帝（上帝公）參拜方式、點光明燈與安太歲、求籤擲筊流程、註生娘娘與福德正神祈願或洲子洋交通資訊，很榮幸為您服務！',
+    en: 'Welcome! I am the Wugu Hesheng Temple AI Docent. You may type or use the microphone to ask about worshipping Xuanwu (Emperor Xuantian), blessing lanterns & Tai Sui, drawing fortune sticks, or transportation!',
+    ja: 'こんにちは！五股賀聖宮のAIスマート案内員です。テキストまたは音声マイクで、主神・北極玄天上帝の参拝方法、光明燈・安太歳、おみくじの引き方、アクセス方法など何でもお尋ねください！',
+    ko: '안녕하세요! 우구 허성궁 AI 스마트 도슨트입니다. 텍스트나 음성 마이크를 통해 주신 북극현천상제 참배법, 광명등·안태세 신청, 점괘 뽑는 법, 교통편 등 무엇이든 질문해 주세요!'
+  },
+  lungshan: {
+    'zh-TW':
+      '信眾您好！我是艋舺龍山寺的 AI 智慧導覽員。您可以透過「文字」或「語音麥克風」向我詢問各殿神明祈願方式（如文昌考運、華陀健康、關公財運、月老紅線還願、二戰不壞觀音傳奇或周邊艋舺美食），很榮幸為您服務！',
+    en: 'Welcome! I am the Bangka Lungshan Temple AI Docent. You may type or use the microphone to ask about deity worship (Exams, Health, Career, Love/Red String), the 1945 Air Raid Miracle, or nearby Bangka street food!',
+    ja: 'こんにちは！艋舺龍山寺のAIスマート案内員です。テキスト入力または音声マイクを使って、各神様のご利益（合格祈願・健康・金運・良縁のお礼参り）や、1945年大空襲の奇跡、周辺グルメなど何でもお尋ねください！',
+    ko: '안녕하세요! 멍자 롱산사 AI 스마트 도슨트입니다. 텍스트나 음성 마이크를 통해 신령별 참배법(시험운, 건강, 재물, 붉은 실 보답), 1945년 대공습의 기적, 주변 맛집 등 무엇이든 질문해 주세요!'
+  }
 };
 
-const QUICK_SAMPLE_QUESTIONS = {
-  'zh-TW': [
-    '我想求考運，文昌帝君要準備什麼供品？',
-    '擲筊一直擲不出聖筊（笑筊／陰筊）怎麼辦？',
-    '月老紅線不見了怎麼辦？結婚後如何還願？',
-    '求事業升遷與財運要拜哪一尊神明？',
-    '為什麼二戰空襲正殿全毀，觀音菩薩卻毫髮無損？',
-    '參拜完附近有哪些必吃的艋舺美食與古蹟？'
-  ],
-  en: [
-    'What offerings should I bring to Emperor Wenchang for exams?',
-    'What if I cannot throw three Sheng-Jiao (Laughing/Negative blocks)?',
-    'What if I lose my Yue Lao red string, and how do I return thanks?',
-    'Which deity should I worship for career and business wealth?',
-    'Tell me the story of the 1945 Air Raid Miracle of Guanyin!',
-    'What famous local street foods and heritage sites are nearby?'
-  ],
-  ja: [
-    '合格祈願の文昌帝君にはどんなお供え物が良いですか？',
-    '聖筊がなかなか出ない時（笑筊・陰筊）はどうすればいい？',
-    '赤い糸をなくした場合は？お礼参り（還願）の作法は？',
-    '仕事運や商売繁盛・金運はどの神様をお参りしますか？',
-    '1945年の台北大空襲で観音様が無傷だった奇跡とは？',
-    '参拝後に立ち寄れる周辺のグルメや観光スポットは？'
-  ],
-  ko: [
-    '시험 합격을 위해 문창제군께 어떤 공양물을 올리나요?',
-    '성교가 계속 나오지 않을 때(소교·음교)는 어떻게 하나요?',
-    '월하노인 붉은 실을 잃어버렸거나 소원 성취 후 보답하려면?',
-    '직장 승진과 사업 재물운을 위해서는 어느 신령께 참배하나요?',
-    '1945년 대공습 때 관세음보살님이 무사했던 기적 이야기란?',
-    '참배 후 가볼 만한 주변 맛집과 역사 명소는 어디인가요?'
-  ]
+const QUICK_SAMPLE_QUESTIONS_BY_TEMPLE = {
+  hesheng: {
+    'zh-TW': [
+      '賀聖宮主祀的北極玄天上帝（上帝公）保佑什麼？怎麼拜？',
+      '請問如何在賀聖宮點光明燈、太歲燈或文昌財利燈？',
+      '在賀聖宮求籤與擲筊（三聖筊）的完整步驟是什麼？',
+      '請問五股賀聖宮的地址、開放時間與交通方式？',
+      '想求考運功名或事業財運，殿內有哪些神明可以參拜？'
+    ],
+    en: [
+      'What does Emperor Xuantian (Xuanwu) bless and how do I worship?',
+      'How do I register for Blessing Lanterns or Tai Sui at Hesheng Temple?',
+      'What is the step-by-step process for drawing fortune sticks here?',
+      'What are Hesheng Temple’s address, opening hours, and directions?',
+      'Which deities in the temple bless exams, career, and wealth?'
+    ],
+    ja: [
+      '主神・北極玄天上帝（上帝公）のご利益と参拝方法は？',
+      '賀聖宮で光明燈や安太歳を申し込むにはどうすればいいですか？',
+      'おみくじ（霊籤）と聖筊（ポエ）の正しい手順を教えてください',
+      '五股賀聖宮の住所・参拝時間・アクセス方法を教えてください',
+      '学業成就や仕事運・金運はどの神様をお参りすれば良いですか？'
+    ],
+    ko: [
+      '주신 북극현천상제(상제공)께서는 어떤 복을 주시며 어떻게 참배하나요?',
+      '허성궁에서 광명등이나 안태세를 신청하려면 어떻게 하나요?',
+      '점괘(영첨) 뽑기와 즈이자오(3연속 성교)의 순서는 어떻게 되나요?',
+      '우구 허성궁의 주소, 개방 시간, 대중교통 이용법은?',
+      '시험 합격이나 사업 재물운을 빌려면 어느 전각을 참배하나요?'
+    ]
+  },
+  lungshan: {
+    'zh-TW': [
+      '我想求考運，文昌帝君要準備什麼供品？',
+      '擲筊一直擲不出聖筊（笑筊／陰筊）怎麼辦？',
+      '月老紅線不見了怎麼辦？結婚後如何還願？',
+      '求事業升遷與財運要拜哪一尊神明？',
+      '為什麼二戰空襲正殿全毀，觀音菩薩卻毫髮無損？',
+      '參拜完附近有哪些必吃的艋舺美食與古蹟？'
+    ],
+    en: [
+      'What offerings should I bring to Emperor Wenchang for exams?',
+      'What if I cannot throw three Sheng-Jiao (Laughing/Negative blocks)?',
+      'What if I lose my Yue Lao red string, and how do I return thanks?',
+      'Which deity should I worship for career and business wealth?',
+      'Tell me the story of the 1945 Air Raid Miracle of Guanyin!',
+      'What famous local street foods and heritage sites are nearby?'
+    ],
+    ja: [
+      '合格祈願の文昌帝君にはどんなお供え物が良いですか？',
+      '聖筊がなかなか出ない時（笑筊・陰筊）はどうすればいい？',
+      '赤い糸をなくした場合は？お礼参り（還願）の作法は？',
+      '仕事運や商売繁盛・金運はどの神様をお参りしますか？',
+      '1945年の台北大空襲で観音様が無傷だった奇跡とは？',
+      '参拝後に立ち寄れる周辺のグルメや観光スポットは？'
+    ],
+    ko: [
+      '시험 합격을 위해 문창제군께 어떤 공양물을 올리나요?',
+      '성교가 계속 나오지 않을 때(소교·음교)는 어떻게 하나요?',
+      '월하노인 붉은 실을 잃어버렸거나 소원 성취 후 보답하려면?',
+      '직장 승진과 사업 재물운을 위해서는 어느 신령께 참배하나요?',
+      '1945년 대공습 때 관세음보살님이 무사했던 기적 이야기란?',
+      '참배 후 가볼 만한 주변 맛집과 역사 명소는 어디인가요?'
+    ]
+  }
 };
 
 export default function AiChatDrawer({
@@ -64,6 +106,9 @@ export default function AiChatDrawer({
   onPlayAudio
 }) {
   const strings = uiStrings[currentLang] || uiStrings['zh-TW'];
+  const templeSlug = getActiveTempleSlug() === 'hesheng' ? 'hesheng' : 'lungshan';
+  const welcomeMap = WELCOME_MESSAGES_BY_TEMPLE[templeSlug];
+  const sampleQuestionsMap = QUICK_SAMPLE_QUESTIONS_BY_TEMPLE[templeSlug];
   const [messages, setMessages] = useState([]);
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -85,7 +130,7 @@ export default function AiChatDrawer({
             : currentLang === 'ko'
             ? 'AI 도슨트 대기 중'
             : 'AI 智慧導覽員線上服務中',
-        text: WELCOME_MESSAGES[currentLang] || WELCOME_MESSAGES['zh-TW'],
+        text: welcomeMap[currentLang] || welcomeMap['zh-TW'],
         tier: 'ai_welcome',
         confidence: 1.0,
         timestamp: new Date().toLocaleTimeString([], {
@@ -96,7 +141,7 @@ export default function AiChatDrawer({
       if (prev.length <= 1) return [welcomeMsg];
       return [welcomeMsg, ...prev.slice(1)];
     });
-  }, [currentLang]);
+  }, [currentLang, templeSlug]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -369,8 +414,8 @@ export default function AiChatDrawer({
           </p>
           <div className="flex flex-wrap gap-1.5">
             {(
-              QUICK_SAMPLE_QUESTIONS[currentLang] ||
-              QUICK_SAMPLE_QUESTIONS['zh-TW']
+              sampleQuestionsMap[currentLang] ||
+              sampleQuestionsMap['zh-TW']
             ).map((q, idx) => (
               <button
                 key={idx}

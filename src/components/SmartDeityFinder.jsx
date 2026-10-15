@@ -12,8 +12,9 @@ import {
 } from 'lucide-react';
 import { fetchRoute } from '../utils/api';
 import { speechManager } from '../utils/tts';
+import { getActiveTempleSlug } from '../core/supabaseClient';
 
-const WISH_CARDS = [
+const LUNGSHAN_WISH_CARDS = [
   {
     id: 'wish_love',
     action: 'guide_yue_lao',
@@ -94,6 +95,159 @@ const WISH_CARDS = [
   }
 ];
 
+const HESHENG_WISH_CARDS = [
+  {
+    id: 'hs_xuantian',
+    action: 'guide_hs_xuantian',
+    icon: ShieldCheck,
+    badge: '一樓大堂正殿 • 主神殿',
+    color: 'from-amber-500/15 to-red-500/20 border-amber-300 text-amber-900',
+    label: {
+      'zh-TW': '消災解厄與事業（北極玄天上帝）',
+      en: 'Protection & Career (Emperor Xuantian)',
+      ja: '厄除け・事業運（北極玄天上帝）',
+      ko: '액운 타파·사업번창 (북극현천상제)'
+    },
+    directGuide: {
+      'zh-TW': {
+        title: '一樓大堂正殿：北極玄天上帝（上帝公）參拜指南',
+        text: '• 殿堂位置：一樓大堂中央主殿\n• 神職護佑：斬妖除魔、消災解厄、事業開創、小人退散、闔家平安\n• 參拜秘訣：玄天上帝腳踏龜蛇、手持七星寶劍，正氣凜然。參拜時請誠心稟報姓名、農曆生日、住址與近期遇到的瓶頸，祈求上帝公撥雲見日、賜予智慧與貴人扶持。',
+        audioScript: '一樓大堂中央奉祀主神北極玄天上帝，俗稱上帝公。玄天上帝手持七星寶劍、腳踏龜蛇，護佑信眾消災解厄、斬除小人並開創事業。參拜時請誠心稟報姓名、農曆生日與心願，祈求上帝公指點迷津、出入平安。'
+      },
+      en: {
+        title: '1F Grand Hall: Emperor Xuantian (Xuanwu) Guide',
+        text: '• Location: 1F Central Main Altar\n• Blessings: Warding off misfortune, career breakthroughs, and family peace\n• Ritual Tip: State your name, birth date, and wish sincerely before the main statue of Emperor Xuantian.',
+        audioScript: 'The 1st floor Main Hall enshrines Emperor Xuantian, holding the Seven-Star Sword and stepping on the Tortoise and Snake. Pray here for protection against misfortune, career success, and family peace.'
+      }
+    }
+  },
+  {
+    id: 'hs_zhusheng',
+    action: 'guide_hs_zhusheng',
+    icon: Heart,
+    badge: '一樓大堂龍邊 • 註生殿',
+    color: 'from-rose-500/15 to-pink-500/20 border-rose-300 text-rose-900',
+    label: {
+      'zh-TW': '求子安胎與良緣家庭（註生娘娘）',
+      en: 'Fertility & Safe Childbirth (Zhusheng)',
+      ja: '子宝・安産・家庭円満（註生娘娘）',
+      ko: '임신·순산·가정 화목 (주생낭랑)'
+    },
+    directGuide: {
+      'zh-TW': {
+        title: '一樓大堂龍邊（右側）：註生娘娘參拜指南',
+        text: '• 殿堂位置：一樓大堂龍邊（面對神明右手邊）側殿\n• 神職護佑：求子嗣、孕期安胎、順產平安、孩童健康成長\n• 參拜秘訣：可準備鮮花或水果誠心參拜，祈求良緣結晶、母子均安、家庭美滿。',
+        audioScript: '一樓大堂龍邊奉祀註生娘娘，專門護佑求子嗣、孕期安胎、順產平安以及孩童健康成長。信眾可準備鮮花或水果誠心祈求家庭美滿。'
+      },
+      en: {
+        title: '1F Dragon Side: Zhusheng Niangniang Guide',
+        text: '• Location: 1F Dragon Side (Right side facing the altar)\n• Blessings: Fertility, safe pregnancy, and children’s health.',
+        audioScript: 'On the Dragon side of the 1st floor hall sits Zhusheng Niangniang, blessing families with fertility, safe childbirth, and healthy children.'
+      }
+    }
+  },
+  {
+    id: 'hs_fude',
+    action: 'guide_hs_fude',
+    icon: Briefcase,
+    badge: '一樓大堂虎邊 • 福德殿',
+    color: 'from-emerald-500/15 to-teal-500/20 border-emerald-300 text-emerald-900',
+    label: {
+      'zh-TW': '求正財偏財與生意（福德正神）',
+      en: 'Wealth & Local Prosperity (Earth God)',
+      ja: '金運・商売繁盛（福德正神・土地公）',
+      ko: '재물운·상업 번창 (복덕정신·토지공)'
+    },
+    directGuide: {
+      'zh-TW': {
+        title: '一樓大堂虎邊（左側）：福德正神（土地公）參拜指南',
+        text: '• 殿堂位置：一樓大堂虎邊（面對神明左手邊）側殿\n• 神職護佑：守護鄉里、賜予正財偏財、開店生意興隆、業績長紅\n• 參拜秘訣：土地公最喜愛麻糬、花生、甜食與水果。參拜時可稟報公司行號或工作地點，祈求財源廣進。',
+        audioScript: '一樓大堂虎邊奉祀福德正神土地公。土地公守護鄉里並賜予正財與生意興隆，參拜時可準備麻糬、花生或水果，稟報工作地點，祈求財源廣進、業績長紅。'
+      },
+      en: {
+        title: '1F Tiger Side: Fude Zhengshen (Earth God) Guide',
+        text: '• Location: 1F Tiger Side (Left side facing the altar)\n• Blessings: Business prosperity, steady wealth, and neighborhood safety.',
+        audioScript: 'On the Tiger side of the 1st floor hall sits Fude Zhengshen, the Earth God. Pray here for business success, career stability, and financial prosperity.'
+      }
+    }
+  },
+  {
+    id: 'hs_wenchang',
+    action: 'guide_hs_wenchang',
+    icon: GraduationCap,
+    badge: '樓上殿堂 • 文昌殿',
+    color: 'from-blue-500/15 to-indigo-500/20 border-blue-300 text-blue-900',
+    label: {
+      'zh-TW': '求考運升學與功名（文昌帝君）',
+      en: 'Exams & Academic Success (Wenchang)',
+      ja: '合格祈願・学業成就（文昌帝君）',
+      ko: '시험 합격·학업 성취 (문창제군)'
+    },
+    directGuide: {
+      'zh-TW': {
+        title: '賀聖宮樓上殿堂：文昌帝君考運功名指南',
+        text: '• 殿堂位置：樓上殿堂文昌殿\n• 神職護佑：升學大考、國家公職考試、證照檢定、職場升遷與智慧開竅\n• 吉祥供品：芹菜（勤奮）、青蔥（聰明）、菜頭（好彩頭）、粽子（包中）。亦可於一樓服務台登記點「文昌燈」。',
+        audioScript: '賀聖宮樓上奉祀文昌帝君，護佑學子升學大考、國考證照與職場升遷。考生可攜帶准考證影本參拜，並可於一樓服務台辦理文昌燈，祈求金榜題名、考運亨通。'
+      },
+      en: {
+        title: 'Upper Hall: Emperor Wenchang Exam Blessing Guide',
+        text: '• Location: Upper Floor Wenchang Hall\n• Blessings: Academic exams, certifications, and career promotion.',
+        audioScript: 'The upper hall enshrines Emperor Wenchang, the deity of literature and examinations. Students and professionals pray here for exam success and wisdom.'
+      }
+    }
+  },
+  {
+    id: 'hs_guangong',
+    action: 'guide_hs_guangong',
+    icon: Compass,
+    badge: '樓上殿堂 • 武聖殿',
+    color: 'from-purple-500/15 to-violet-500/20 border-purple-300 text-purple-900',
+    label: {
+      'zh-TW': '求貴人扶持與武財神（關聖帝君）',
+      en: 'Righteousness & Business (Guan Gong)',
+      ja: '商売繁盛・貴人運（関聖帝君）',
+      ko: '귀인 상봉·무재신 (관성제군)'
+    },
+    directGuide: {
+      'zh-TW': {
+        title: '賀聖宮樓上殿堂：關聖帝君（恩主公）參拜指南',
+        text: '• 殿堂位置：樓上殿堂\n• 神職護佑：忠義正氣、商業契約順利、貴人扶持、武財神招財\n• 參拜秘訣：祈求事業合夥誠信、遠離是非小人、業務拓展順利。',
+        audioScript: '賀聖宮樓上奉祀關聖帝君，又稱恩主公與武財神。護佑信眾事業合夥誠信、貴人扶持與財運亨通。'
+      },
+      en: {
+        title: 'Upper Hall: Guan Sheng Dijun (God of Martial Wealth)',
+        text: '• Location: Upper Floor Hall\n• Blessings: Business integrity, benefactors, and martial wealth.',
+        audioScript: 'Guan Sheng Dijun blesses worshippers with business integrity, helpful benefactors, and strong career fortune.'
+      }
+    }
+  },
+  {
+    id: 'hs_lantern',
+    action: 'guide_hs_lantern',
+    icon: Activity,
+    badge: '一樓大堂 • 服務台',
+    color: 'from-red-500/15 to-amber-500/20 border-red-300 text-red-900',
+    label: {
+      'zh-TW': '點光明燈／安太歲／平安祈福',
+      en: 'Blessing Lanterns & Tai Sui Service',
+      ja: '光明燈・安太歳・祈祷のご案内',
+      ko: '광명등·안태세·평안 기원 안내'
+    },
+    directGuide: {
+      'zh-TW': {
+        title: '一樓大堂服務台：點光明燈、安太歲與祈福指南',
+        text: '• 辦理位置：一樓大堂服務台\n• 服務項目：光明燈、安太歲（太歲燈）、文昌燈、財利燈、平安祈福卡\n• 辦理方式：請準備祈福者之「姓名、農曆出生年月日、吉時與居住地址」，由服務台人員協助登記造冊，每逢初一、十五皆有誦經植福。',
+        audioScript: '若欲辦理點光明燈、安太歲、文昌燈或財利燈，請至一樓大堂服務台。只需準備祈福者的姓名、農曆生日與地址即可登記，由北極玄天上帝全年護佑元辰光彩、出入平安。'
+      },
+      en: {
+        title: '1F Service Desk: Blessing Lanterns & Tai Sui Registration',
+        text: '• Location: 1F Grand Hall Service Desk\n• Services: Blessing Lanterns, Tai Sui, Wenchang, and Wealth Lanterns.',
+        audioScript: 'Visit the 1st floor Service Desk to register for Blessing Lanterns or Tai Sui protection. Simply provide your name and birth date for year-round blessings.'
+      }
+    }
+  }
+];
+
 const JIAOBEI_OUTCOMES = {
   sheng: {
     icon: '🌙✨',
@@ -154,8 +308,34 @@ export default function SmartDeityFinder({ currentLang, onPlayAudio }) {
   const [shengStreak, setShengStreak] = useState(0);
   const [isTossing, setIsTossing] = useState(false);
 
+  const isHesheng = getActiveTempleSlug() === 'hesheng';
+  const wishCards = isHesheng ? HESHENG_WISH_CARDS : LUNGSHAN_WISH_CARDS;
+
   const handleSelectWish = async (card) => {
     speechManager.playTempleChime();
+    if (card.directGuide) {
+      const content = card.directGuide[currentLang] || card.directGuide['zh-TW'];
+      const guideData = {
+        action: card.action,
+        title: content.title,
+        text: content.text,
+        audioScript: content.audioScript
+      };
+      setActiveGuide(guideData);
+      if (guideData.audioScript) {
+        speechManager.speak(guideData.audioScript, currentLang, 1.0);
+        if (onPlayAudio) {
+          onPlayAudio({
+            topic: guideData.title,
+            script: guideData.audioScript,
+            tier: '90%_knowledge_base',
+            latency: 6
+          });
+        }
+      }
+      return;
+    }
+
     const res = await fetchRoute({ action: card.action, lang: currentLang });
     if (res && res.success) {
       setActiveGuide(res.data);
@@ -225,7 +405,7 @@ export default function SmartDeityFinder({ currentLang, onPlayAudio }) {
 
       {/* 6 Smart Wish Pills Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-        {WISH_CARDS.map((card) => {
+        {wishCards.map((card) => {
           const Icon = card.icon;
           const isSelected = activeGuide && activeGuide.action === card.action;
 

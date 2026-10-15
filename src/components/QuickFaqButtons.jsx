@@ -4,7 +4,7 @@ import { Clock, Flame, Heart, Scroll, Volume2, Sparkles, Zap, Check, ChevronDown
 import { fetchRoute } from '../utils/api';
 import { speechManager } from '../utils/tts';
 
-export default function QuickFaqButtons({ currentLang, onPlayAudio, activeFaqId }) {
+export default function QuickFaqButtons({ currentLang, onPlayAudio, activeFaqId, faqs = [] }) {
   const strings = uiStrings[currentLang] || uiStrings['zh-TW'];
   const [selectedFaq, setSelectedFaq] = useState(null);
   const [loadingAction, setLoadingAction] = useState(null);
@@ -167,6 +167,9 @@ export default function QuickFaqButtons({ currentLang, onPlayAudio, activeFaqId 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
         {coreActions.map((item, idx) => {
           const Icon = item.icon;
+          const dynamicFaq = Array.isArray(faqs) ? (faqs.find(f => f.action === item.action) || faqs[idx]) : null;
+          const displayTitle = dynamicFaq?.title || item.title[currentLang] || item.title['zh-TW'];
+          const displayPreview = dynamicFaq?.shortDesc || item.preview[currentLang] || item.preview['zh-TW'];
           const isCurrentActive = selectedFaq && selectedFaq.action === item.action;
           const isLoading = loadingAction === item.action;
 
@@ -193,7 +196,7 @@ export default function QuickFaqButtons({ currentLang, onPlayAudio, activeFaqId 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between gap-1 mb-1">
                     <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-600 font-sans">
-                      🔘 {currentLang === 'zh-TW' ? `按鈕 ${idx + 1}` : `Button ${idx + 1}`} • {item.tag}
+                      🔘 {currentLang === 'zh-TW' ? `常見問題 ${idx + 1}` : `FAQ ${idx + 1}`}
                     </span>
                     <span className="text-[11px] text-temple-gold flex items-center space-x-1 font-mono">
                       <Volume2 className="w-3.5 h-3.5 text-temple-red shrink-0" />
@@ -202,11 +205,11 @@ export default function QuickFaqButtons({ currentLang, onPlayAudio, activeFaqId 
                   </div>
 
                   <h3 className="font-serif font-bold text-sm sm:text-base text-temple-stone leading-snug group-hover:text-temple-red transition-colors">
-                    【{item.title[currentLang] || item.title['zh-TW']}】
+                    【{displayTitle}】
                   </h3>
 
                   <p className="text-xs text-zinc-600 mt-1 line-clamp-1">
-                    {item.preview[currentLang] || item.preview['zh-TW']}
+                    {displayPreview}
                   </p>
                 </div>
               </div>
