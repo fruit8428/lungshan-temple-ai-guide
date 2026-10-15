@@ -10,9 +10,13 @@ export default function Header({
   onOpenHitl, 
   onOpenAiChat,
   isAudioActive,
-  autoDetected
+  autoDetected,
+  templeName,
+  templeBadge
 }) {
   const strings = uiStrings[currentLang] || uiStrings['zh-TW'];
+  const displayTitle = templeName || strings.appTitle;
+  const emblemChar = displayTitle.includes('賀聖') ? '賀' : displayTitle.includes('龍山') ? '龍' : displayTitle.charAt(0);
 
   return (
     <header className="sticky top-0 z-40 bg-temple-charcoal/95 backdrop-blur-md border-b border-temple-gold/20 shadow-lg text-white">
@@ -21,10 +25,14 @@ export default function Header({
         <div className="flex items-center space-x-2">
           <span className="inline-block w-2 h-2 rounded-full bg-temple-gold animate-pulse"></span>
           <span className="font-medium tracking-wide">
-            {currentLang === 'zh-TW' && "文化部指定國定古蹟 • 創建於清乾隆三年 (1738)"}
-            {currentLang === 'en' && "National Historic Monument • Founded in 1738"}
-            {currentLang === 'ja' && "中華民国国定古跡 • 1738年創建の名刹"}
-            {currentLang === 'ko' && "대만 국가지정고적 • 1738년 창건된 유서 깊은 사찰"}
+            {templeBadge || (
+              <>
+                {currentLang === 'zh-TW' && "文化部指定國定古蹟 • 創建於清乾隆三年 (1738)"}
+                {currentLang === 'en' && "National Historic Monument • Founded in 1738"}
+                {currentLang === 'ja' && "中華民国国定古跡 • 1738年創建の名刹"}
+                {currentLang === 'ko' && "대만 국가지정고적 • 1738년 창건된 유서 깊은 사찰"}
+              </>
+            )}
           </span>
         </div>
         <div className="flex items-center space-x-3 text-xs">
@@ -34,7 +42,7 @@ export default function Header({
             </span>
           )}
           <span className="text-amber-200/80 font-mono text-[10px]">
-            RAG + Human-in-the-Loop
+            Supabase Cloud + RAG
           </span>
         </div>
       </div>
@@ -44,12 +52,12 @@ export default function Header({
         {/* Brand & Emblem */}
         <div className="flex items-center space-x-3">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-temple-red to-temple-darkred border border-temple-gold flex items-center justify-center shadow-md">
-            <span className="text-temple-gold font-serif font-black text-xl">龍</span>
+            <span className="text-temple-gold font-serif font-black text-xl">{emblemChar}</span>
           </div>
           <div>
             <div className="flex items-center space-x-2">
               <h1 className="text-lg md:text-xl font-serif font-bold text-amber-50 tracking-wider">
-                {strings.appTitle}
+                {displayTitle}
               </h1>
               <span className="px-2 py-0.5 text-[10px] rounded-full bg-temple-gold/20 text-temple-gold border border-temple-gold/40 font-medium">
                 AI 導覽

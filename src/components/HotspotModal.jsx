@@ -13,7 +13,7 @@ export default function HotspotModal({
 }) {
   if (!isOpen || !hotspotData) return null;
 
-  const hotspotSummaries = getAllHotspotsSummary(currentLang);
+  const hotspotSummaries = hotspotData.allHotspots || getAllHotspotsSummary(currentLang);
 
   const handlePlayVoice = () => {
     if (hotspotData.audioScript) {

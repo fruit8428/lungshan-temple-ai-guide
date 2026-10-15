@@ -348,7 +348,13 @@ export async function clientGetHotspotGuide(
           location: pickLocalized(matched, "location", lang),
           textContent: pickLocalized(matched, "content", lang),
           audioScript: pickLocalized(matched, "script", lang),
-          comparison: null
+          comparison: null,
+          allHotspots: bundle.hotspots.map(h => ({
+            id: h.spot_id,
+            icon: h.icon || "🦁",
+            badge: pickLocalized(h, "badge", lang),
+            title: pickLocalized(h, "title", lang)
+          }))
         };
       }
     }

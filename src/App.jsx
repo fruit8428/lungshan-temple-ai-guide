@@ -159,6 +159,8 @@ export default function App() {
         onOpenAiChat={() => setIsAiChatOpen(true)}
         isAudioActive={!!activeAudio}
         autoDetected={autoDetected}
+        templeName={historyData?.templeName}
+        templeBadge={historyData?.badge}
       />
 
       {/* Main Container */}
